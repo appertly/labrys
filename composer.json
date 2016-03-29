@@ -1,0 +1,35 @@
+{
+    "name": "appertly/labrys",
+    "type": "library",
+    "description": "A library that helps you write web applications in Hack",
+    "keywords": ["hack", "web", "webapp", "web application"],
+    "homepage": "http://gitlab.com/appertly/labrys",
+    "require": {
+        "hhvm": ">=3.9.0",
+        "zendframework/zend-diactoros": "~1.0",
+        "monolog/monolog": "~1.0",
+        "caridea/acl": "^2.0.0",
+        "caridea/auth": "^2.0.0",
+        "caridea/container": "^2.0.0",
+        "caridea/http": "^2.0.0",
+        "caridea/validate": "^2.0.0",
+        "aura/router": "3.x-dev",
+        "facebook/xhp-lib": "~2.2",
+        "mongodb/mongodb": "dev-master",
+    },
+    "require-dev": {
+        "phpunit/phpunit-skeleton-generator": "~2.0",
+        "phpunit/phpunit": "~5.2.0",
+        "hack-psr/psr7-http-message-hhi": "dev-master",
+        "libreworks/psr3-log-hhi": "~1.0.0",
+        "91carriage/phpunit-hhi": "~5.2.1"
+    },
+    "autoload": {
+        "classmap": [
+            "xhp"
+        ],
+        "psr-4": {
+          "Labrys\\": "src/"
+        }
+    }
+}
