@@ -47,6 +47,7 @@ class :layout:base extends :x:element
 
         $body = <body>
             {$this->getChildren()}
+            <ui:body-scripts page={$page}/>
         </body>;
 
         foreach ($page->getBodyClasses() as $class) {
@@ -60,7 +61,6 @@ class :layout:base extends :x:element
             <html lang={$page->getLang()}>
                 {$head}
                 {$body}
-                <ui:body-scripts page={$page}/>
             </html>
         </x:doctype>;
     }
