@@ -60,7 +60,7 @@ class Unroutable extends \RuntimeException implements \Labrys\Web\Exception
                 return new self("Method Not Allowed", 405, null, $allows);
             case 'Aura\Router\Rule\Accepts':
                 return new self("Not Acceptable", 406);
-            case 'Requiem\System\Web\AuthRule':
+            case 'Labrys\Web\AuthRule':
                 return new self("You Must Be Authenticated", 403);
             default:
                 return new self("Not Found", 404);

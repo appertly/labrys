@@ -17,7 +17,7 @@
  * @copyright 2015-2016 Appertly
  * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
  */
-namespace Requiem\System\Web;
+namespace Labrys\Web;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
