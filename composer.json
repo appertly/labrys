@@ -15,7 +15,7 @@
         "caridea/validate": "^2.0.0",
         "aura/router": "3.x-dev",
         "facebook/xhp-lib": "~2.2",
-        "mongodb/mongodb": "dev-master",
+        "mongodb/mongodb": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit-skeleton-generator": "~2.0",
