@@ -19,24 +19,22 @@
  */
 
 /**
- * A block of content.
+ * A region for several blocks.
  */
-class :ui:block extends :x:element implements HasXHPHelpers
+class :ui:body-scripts extends :x:element implements HasXHPHelpers
 {
     use XHPHelpers, XHPAsync;
 
-    category %flow;
+    category %flow, %phrase, %metadata;
     children empty;
-    attribute :xhp:html-element,
-        Labrys\Web\Block block @required,
-        ?Psr\Http\Message\ServerRequestInterface request = null;
+    attribute Labrys\Web\Page page @required;
 
     protected async function asyncRender(): Awaitable<XHPRoot>
     {
-        $block = $this->:block;
-        $kid = await $block->compose($this->:request);
-        return <div class={"block {$block->getRegion()}-block"}>
-            {$kid}
-        </div>;
+        $frag = <x:frag/>;
+        foreach ($this->:page->getBodyScripts() as $script) {
+            $frag->appendChild($script);
+        }
+        return $frag;
     }
 }
