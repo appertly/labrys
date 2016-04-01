@@ -12,7 +12,7 @@
         "caridea/container": "^2.0.0",
         "caridea/http": "^2.0.0",
         "caridea/validate": "^2.0.0",
-        "aura/router": "3.x-dev",
+        "aura/router": "^3.0.0",
         "facebook/xhp-lib": "~2.2",
         "mongodb/mongodb": "dev-master"
     },
