@@ -1,4 +1,4 @@
-<?hh // strict
+<?hh
 /**
  * Labrys
  *
@@ -174,7 +174,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      *     bytes are available
      * @throws \RuntimeException if an error occurs
      */
-    public function read(int $length): string
+    public function read($length): string
     {
         if (!$this->isReadable()) {
             throw new \RuntimeException('Cannot read from stream');
@@ -209,7 +209,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      *     SEEK_END: Set position to end-of-stream plus offset.
      * @throws \RuntimeException on failure.
      */
-    public function seek(int $offset, int $whence = SEEK_SET): void
+    public function seek($offset, $whence = SEEK_SET): void
     {
         throw new \BadMethodCallException('Stream is not seekable');
     }
@@ -241,7 +241,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      * @return Returns the number of bytes written to the stream.
      * @throws \RuntimeException on failure
      */
-    public function write(string $string): int
+    public function write($string): int
     {
         throw new \BadMethodCallException('Stream is not writable');
     }
