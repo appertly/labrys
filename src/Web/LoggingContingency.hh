@@ -23,30 +23,31 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
- * Ability to influence front controller.
+ * Logs exceptions and then delegate real work to another `Contingency`.
  */
-interface Plugin
+class LoggingContingency implements Contingency
 {
     /**
-     * Allows a plugin to configure the request before any route matching.
+     * Creates a new LoggingContingency.
      *
-     * Implementations can return the original request if no modifications need
-     * to take place.
-     *
-     * @param $request - The server request
-     * @return The request
+     * @param $errorLogger - The error logger
+     * @param $delegate - The actual Contingency
      */
-    public function advise(Request $request): Request;
+    public function __construct(private \Labrys\ErrorLogger $errorLogger, private Contingency $delegate)
+    {
+    }
 
     /**
-     * Allows a plugin to issue a response before the request is dispatched.
+     * Handles an exception.
      *
-     * Implementations must return the original response if no actions are
-     * performed.
-     *
-     * @param $request - The server request
+     * @param $request - The request
      * @param $response - The response
-     * @return The response
+     * @param $e - The exception to process
+     * @return The new response
      */
-    public function intercept(Request $request, Response $response) : Response;
+    public function process(Request $request, Response $response, \Exception $e) : Response
+    {
+        $this->errorLogger->log($e);
+        return $this->delegate->process($request, $response, $e);
+    }
 }

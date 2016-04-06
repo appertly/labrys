@@ -28,12 +28,28 @@ use Caridea\Http\ProblemDetails;
  */
 class SimpleContingency implements Contingency
 {
+    /**
+     * @var Whether to include exception information in responses
+     */
+    protected bool $debug;
+    /**
+     * @var The name of this site; used only in HTML responses
+     */
+    protected string $site;
+    /**
+     * @var The URL for the standalone login form
+     */
+    protected string $authUrl;
+
+    /**
+     * @var Convenient map of HTTP status codes to human-readable explanations
+     */
     protected static ImmMap<int,string> $messages = ImmMap{
         403 => "You are not allowed to perform this action.",
         404 => "We don't have anything at this URL. Double-check the URL you requested.",
         405 => "You can't use that HTTP method for this URL. Check the Allow response header for the ones you can.",
         406 => "We don't have any content available in the MIME type you specified in your Accept header. Try specifying additional MIME types.",
-        422 => "There was a problem with the data you submitted. Review the messages below and try again.",
+        422 => "There was a problem with the data you submitted. Review the messages for each field and try again.",
         423 => "This data is locked. You have permission, but it is no longer allowed to be changed.",
         500 => "It looks like we have a problem on our end! Our staff has been notified. Please try again later."
     };
@@ -41,12 +57,18 @@ class SimpleContingency implements Contingency
     /**
      * Creates a new SimpleContingency.
      *
-     * @param $debug - Whether to include exception stack trace information (should be false in production!). Defaults to false.
-     * @param $site - The name of this application. Defaults to "Labrys".
-     * @param $authUrl - The URL for authentication form. Defaults to "/auth/login".
+     * The following options are available:
+     * * `options` – Whether to include exception stack trace information (should be false in production!). Defaults to false.
+     * * `site` – The name of this application (used in HTML responses)
+     * * `authUrl` – The URL for a standalone login form
+     *
+     * @param $options - The options
      */
-    public function __construct(private bool $debug = false, private string $site = "Labrys", private string $authUrl = "/auth/login")
+    public function __construct(\ConstMap<string,mixed> $options = ImmMap{})
     {
+        $this->debug = (bool)($options['debug'] ?? false);
+        $this->site = (string)($options['site'] ?? '');
+        $this->authUrl = (string)($options['authUrl'] ?? '');
     }
 
     /**
@@ -55,7 +77,9 @@ class SimpleContingency implements Contingency
      * This is your chance for logging, changing the HTTP status header, and
      * rendering some kind of message for the client.
      *
-     * @param $e The exception to process
+     * @param $request - The request
+     * @param $response - The response
+     * @param $e - The exception to process
      * @return The new response
      */
     public function process(Request $request, Response $response, \Exception $e) : Response
@@ -90,7 +114,7 @@ class SimpleContingency implements Contingency
                 $response->getBody()->write((string)$this->renderJson($request, $e, $values));
                 break;
             default:
-                if ($needLogin) {
+                if ($needLogin && strlen($this->authUrl) > 0) {
                     $response = $response->withStatus(303)->withHeader(
                         'Location', $this->authUrl . '?then=' . (string)$request->getRequestTarget()
                     );
@@ -117,32 +141,32 @@ class SimpleContingency implements Contingency
             $values['status'] = $code;
             $values['detail'] = self::$messages[$code];
         } elseif ($e instanceof \Caridea\Acl\Exception\Forbidden) {
-            $values['title'] = $e->getMessage();
+            $values['title'] = 'Access Denied';
             $values['status'] = 403;
             $values['detail'] = self::$messages[403];
         } elseif ($e instanceof \Labrys\Db\Exception\Retrieval) {
-            $values['title'] = $e->getMessage();
+            $values['title'] = 'Resource Not Found';
             $values['status'] = 404;
             $values['detail'] = self::$messages[404];
         } elseif ($e instanceof \Labrys\Db\Exception\Integrity) {
-            $values['title'] = $e->getMessage();
+            $values['title'] = 'Constraint Violation';
             $values['status'] = 409;
             $values['detail'] = 'The data you submitted violates unique constraints. Most likely, this is a result of an existing record with similar data. Double-check existing records and try again.';
         } elseif ($e instanceof \Labrys\Db\Exception\Concurrency) {
-            $values['title'] = $e->getMessage();
+            $values['title'] = 'Concurrent Modification';
             $values['status'] = 409;
             $values['detail'] = 'Someone else saved changes to this same data while you were editing. Try your request again using the latest copy of the record.';
         } elseif ($e instanceof \Caridea\Validate\Exception\Invalid) {
             $values['title'] = 'Data Validation Failure';
             $values['status'] = 422;
             $values['detail'] = self::$messages[422];
-            $errors = [];
+            $errors = Vector{};
             foreach ($e->getErrors() as $field => $code) {
-                $errors[] = ['field' => $field, 'code' => $code];
+                $errors[] = Map{'field' => $field, 'code' => $code};
             }
             $extra['errors'] = $errors;
         } elseif ($e instanceof \Labrys\Db\Exception\Locked) {
-            $values['title'] = $e->getMessage();
+            $values['title'] = 'Resource Locked';
             $values['status'] = 423;
             $values['detail'] = self::$messages[423];
         } else {
@@ -157,7 +181,7 @@ class SimpleContingency implements Contingency
     protected function renderJson(Request $request, \Exception $e, Map<string,mixed> $values) : ProblemDetails
     {
         return new ProblemDetails(
-            new \Zend\Diactoros\Uri('http://httpstatus.es/' . ((string) $values['status'])),
+            null,
             (string) $values['title'],
             (int) $values['status'],
             (string) $values['detail'],
@@ -171,6 +195,15 @@ class SimpleContingency implements Contingency
         $frag = <x:frag/>;
         $extra = $values['extra'];
         if ($extra instanceof Map){
+            $errors = $extra->get('errors');
+            if ($errors instanceof Traversable) {
+                $ul = <ul/>;
+                foreach ($errors as $err) {
+                    $err = $err instanceof Map ? $err : ImmMap{};
+                    $ul->appendChild(<li>{$err['field'] ?? ''}: {$err['code'] ?? ''}</li>);
+                }
+                $frag->appendChild($ul);
+            }
             if ($extra->containsKey('exception')) {
                 $frag->appendChild(<h2>{$extra['exception']}</h2>);
             }
@@ -181,10 +214,22 @@ class SimpleContingency implements Contingency
                 $frag->appendChild(<pre>{$extra['stack']}</pre>);
             }
         }
-        return <page:error site={$this->site}>
-            <h1>{$values['title']}</h1>
-            <p>{$values['detail']}</p>
-            {$frag}
-        </page:error>;
+        return <x:doctype>
+            <html lang="en">
+                <head>
+                    <meta charset="utf-8"/>
+                    <title>{$values['title']} | {$this->site}</title>
+                </head>
+                <body>
+                    <header>
+                        <h1>{$values['title']}</h1>
+                    </header>
+                    <main role="main">
+                        <p>{$values['detail']}</p>
+                        {$frag}
+                    </main>
+                </body>
+            </html>
+        </x:doctype>;
     }
 }

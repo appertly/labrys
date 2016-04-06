@@ -28,23 +28,26 @@ use Psr\Http\Message\ResponseInterface as Response;
 class Front
 {
     /**
+     * @var Any plugins registered in the container
+     */
+    private ImmVector<Plugin> $plugins;
+
+    /**
      * Creates a new Front Controller
      *
      * @param $matcher - The route matcher
      * @param $emitter - The response emitter
      * @param $container - The dependency injection container
-     * @param $errorLogger - The error logger
      * @param $contingency - The error handler
-     * @param $authService - The authentication service
      */
     public function __construct(
         private \Aura\Router\Matcher $matcher,
-        private \Zend\Diactoros\Response\EmitterInterface $emitter,
+        private Emitter $emitter,
         private \Caridea\Container\Container $container,
-        private \Labrys\ErrorLogger $errorLogger,
-        private Contingency $contingency,
-        private \Caridea\Auth\Service $authService
-    ) {
+        private Contingency $contingency
+    )
+    {
+        $this->plugins = new ImmVector($container->getByType(Plugin::class));
     }
 
     /**
@@ -56,9 +59,11 @@ class Front
     public function execute(Request $request, Response $response): void
     {
         try {
+            foreach ($this->plugins as $p) {
+                $request = $p->advise($request);
+            }
             $this->emitter->emit($this->dispatch($request, $response));
         } catch (\Exception $e) {
-            $this->errorLogger->log($e);
             $this->emitter->emit(
                 $this->contingency->process($request, $response, $e)
             );
@@ -76,7 +81,6 @@ class Front
      */
     protected function dispatch(Request $request, Response $response): Response
     {
-        $request = $request->withAttribute('principal', $this->authService->getPrincipal());
         $route = $this->matcher->match($request);
         if (!$route) {
             $failedRoute = $this->matcher->getFailedRoute();
@@ -93,8 +97,8 @@ class Front
             foreach ($route->attributes as $k => $v) {
                 $request = $request->withAttribute($k, $v);
             }
-            $request = $request->withAttribute('route', $route);
-            foreach ($this->container->getByType(Plugin::class) as $p) {
+            $request = $request->withAttribute('_route', $route);
+            foreach ($this->plugins as $p) {
                 $nr = $p->intercept($request, $response);
                 if ($nr !== $response) {
                     return $nr;

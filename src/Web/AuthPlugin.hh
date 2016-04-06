@@ -23,10 +23,19 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
- * Ability to influence front controller.
+ * Authentication plugin for the front controller.
  */
-interface Plugin
+class AuthPlugin implements Plugin
 {
+    /**
+     * Creates a new AuthPlugin.
+     *
+     * @param $service - The auth service
+     */
+    public function __construct(private \Caridea\Auth\Service $service)
+    {
+    }
+
     /**
      * Allows a plugin to configure the request before any route matching.
      *
@@ -36,17 +45,20 @@ interface Plugin
      * @param $request - The server request
      * @return The request
      */
-    public function advise(Request $request): Request;
+    public function advise(Request $request): Request
+    {
+        return $request->withAttribute('principal', $this->service->getPrincipal());
+    }
 
     /**
      * Allows a plugin to issue a response before the request is dispatched.
-     *
-     * Implementations must return the original response if no actions are
-     * performed.
      *
      * @param $request - The server request
      * @param $response - The response
      * @return The response
      */
-    public function intercept(Request $request, Response $response) : Response;
+    public function intercept(Request $request, Response $response) : Response
+    {
+        return $response;
+    }
 }

@@ -6,7 +6,6 @@
     "homepage": "http://gitlab.com/appertly/labrys",
     "require": {
         "hhvm": ">=3.9.0",
-        "zendframework/zend-diactoros": "~1.0",
         "caridea/acl": "^2.0.0",
         "caridea/auth": "^2.0.0",
         "caridea/container": "^2.0.0",

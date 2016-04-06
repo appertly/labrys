@@ -19,64 +19,55 @@
  */
 namespace Labrys;
 
- /**
-  * Interface for system module
-  */
- abstract class Module
- {
-     /**
-      * Gets the module metadata.
-      *
-      * This array should contain at the very least the keys `name`, `version`,
-      * `author`, and `description`. Feel free to add any additional fields you
-      * like, such as `license`, or `copyright`.
-      *
-      * @return A Map of the module metadata
-      */
-     public abstract function getMeta() : ImmMap<string,string>;
+/**
+ * Interface for system module.
+ */
+abstract class Module
+{
+    /**
+     * Gets the module metadata.
+     *
+     * This array should contain at the very least the keys `name`, `version`,
+     * `author`, and `description`. Feel free to add any additional fields you
+     * like, such as `license`, or `copyright`.
+     *
+     * @return A Map of the module metadata
+     */
+    public abstract function getMeta() : ImmMap<string,string>;
 
-     /**
-      * Gets static configuration settings
-      *
-      * @return The module configuration settings
-      */
-     public function getConfig() : ImmMap<string,mixed>
-     {
-         return ImmMap{};
-     }
+    /**
+     * Gets static configuration settings.
+     *
+     * @return The module configuration settings
+     */
+    public function getConfig() : ImmMap<string,mixed>
+    {
+        return ImmMap{};
+    }
 
-     /**
-      * Allows the module to register classes in the backend container.
-      *
-      * This method must only invoke the `eager`, `lazy`, and `proto` methods. It
-      * should *not* attempt to build the container.
-      *
-      * @param $builder - The backend dependency injection container
-      * @param $properties - The configuration settings
-      */
-     public function setupBackend(\Caridea\Container\Builder $builder, \Caridea\Container\Properties $properties): void
-     {
-     }
+    /**
+     * Allows the module to register classes in the backend container.
+     *
+     * This method must only invoke the `eager`, `lazy`, and `proto` methods. It
+     * should *not* attempt to build the container.
+     *
+     * @param $builder - The backend dependency injection container
+     * @param $properties - The configuration settings
+     */
+    public function setupBackend(\Caridea\Container\Builder $builder, \Caridea\Container\Properties $properties): void
+    {
+    }
 
-     /**
-      * Allows the module to register classes in the frontend container.
-      *
-      * This method must only invoke the `eager`, `lazy`, and `proto` methods. It
-      * should *not* attempt to build the container.
-      *
-      * @param $builder - The frontend dependency injection container
-      * @param $properties - The configuration settings
-      */
-     public function setupFrontend(\Caridea\Container\Builder $builder, \Caridea\Container\Properties $properties): void
-     {
-     }
-
-     /**
-      * Allows the module to register URL routes.
-      *
-      * @param $map - The route map
-      */
-     public function setupRoutes(\Aura\Router\Map $map): void
-     {
-     }
- }
+    /**
+     * Allows the module to register classes in the frontend container.
+     *
+     * This method must only invoke the `eager`, `lazy`, and `proto` methods. It
+     * should *not* attempt to build the container.
+     *
+     * @param $builder - The frontend dependency injection container
+     * @param $properties - The configuration settings
+     */
+    public function setupFrontend(\Caridea\Container\Builder $builder, \Caridea\Container\Properties $properties): void
+    {
+    }
+}

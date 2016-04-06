@@ -189,12 +189,16 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Seek to the beginning of the stream.
      *
-     * This stream is not seekable, this method will raise an exception.
+     * This stream is not seekable, this method will raise an exception if the
+     * stream pointer is not at the beginning.
      *
      * @throws \RuntimeException on failure.
      */
     public function rewind(): void
     {
+        if ($this->tell() === 0) {
+            return;
+        }
         throw new \BadMethodCallException('Stream is not seekable');
     }
 
@@ -211,6 +215,9 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      */
     public function seek($offset, $whence = SEEK_SET): void
     {
+        if ($offset === 0 && ($this->tell() === 0 || $whence !== SEEK_SET)) {
+            return;
+        }
         throw new \BadMethodCallException('Stream is not seekable');
     }
 
