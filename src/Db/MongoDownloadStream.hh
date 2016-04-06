@@ -123,7 +123,7 @@ class MongoDownloadStream implements StreamInterface
      *     SEEK_END: Set position to end-of-stream plus offset.
      * @throws \RuntimeException on failure.
      */
-    public function seek(int $offset, int $whence = SEEK_SET): void
+    public function seek($offset, $whence = SEEK_SET): void
     {
         if ($offset === 0 && ($this->tell() === 0 || $whence !== SEEK_SET)) {
             return;
@@ -166,7 +166,7 @@ class MongoDownloadStream implements StreamInterface
      * @return int Returns the number of bytes written to the stream.
      * @throws \RuntimeException on failure.
      */
-    public function write(string $string): int
+    public function write($string): int
     {
         throw new \BadMethodCallException('Stream is not writable');
     }
@@ -191,7 +191,7 @@ class MongoDownloadStream implements StreamInterface
      *     if no bytes are available.
      * @throws \RuntimeException if an error occurs.
      */
-    public function read(int $length): string
+    public function read($length): string
     {
         return $this->download->downloadNumBytes($length);
     }
