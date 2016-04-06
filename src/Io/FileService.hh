@@ -34,6 +34,14 @@ interface FileService<Tk,Tv>
     public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata) : Tk;
 
     /**
+     * Gets the file as a PSR-7 Stream.
+     *
+     * @param $id - The document identifier, either a string or `ObjectID`
+     * @return The readable stream
+     */
+    public function messageStream(mixed $id): \Psr\Http\Message\StreamInterface;
+
+    /**
      * Gets a stream resource for the given ID.
      *
      * @param $id - The document identifier, either a string or `ObjectID`

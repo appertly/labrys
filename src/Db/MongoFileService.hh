@@ -60,6 +60,20 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
     }
 
     /**
+     * Gets the file as a PSR-7 Stream.
+     *
+     * @param $id - The document identifier, either a string or `ObjectID`
+     * @return The readable stream
+     */
+    public function messageStream(mixed $id): \Psr\Http\Message\StreamInterface
+    {
+        $file = $this->read($id);
+        return new MongoDownloadStream(
+            new \MongoDB\GridFS\GridFSDownload($this->bucket->getCollectionsWrapper(), $file)
+        );
+    }
+
+    /**
      * Gets a readable stream resource for the given ID.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
