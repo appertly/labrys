@@ -49,7 +49,8 @@ trait JsonHelper
      */
     protected function sendCreated(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
     {
-        return $this->sendVerb('created', $response, $type, $ids, $extra);
+        return $this->sendVerb('created', $response, $type, $ids, $extra)
+            ->withStatus(201, "Created");
     }
 
     /**
