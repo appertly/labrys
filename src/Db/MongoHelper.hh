@@ -92,9 +92,9 @@ trait MongoHelper
     protected static function translateException(\Exception $e): \Exception
     {
         // TODO exception stuff
-        // if ($e instanceof \MongoCursorException && $e->getCode() == 11000) {
-        //     return new Exception\Integrity("Unique constraint violation", 409, $e);
-        // }
+        if ($e instanceof \MongoDB\Driver\Exception\RuntimeException && $e->getCode() == 11000) {
+            return new Exception\Integrity("Unique constraint violation", 409, $e);
+        }
         return new Exception\System("Uncategorized database error", 0, $e);
     }
 }
