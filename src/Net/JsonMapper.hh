@@ -25,10 +25,25 @@ namespace Labrys\Net;
 class JsonMapper
 {
     /**
+     * Converts a JSON string to a Vector.
+     *
+     * @param $json - The JSON to convert
+     * @throws \Labrys\Net\Exception\Illegible if the JSON is invalid
+     */
+    public function toVector(?string $json) : Vector<mixed>
+    {
+        $a = $json === null ? null : json_decode($json, true);
+        if (!is_array($a)) {
+            throw new Exception\Illegible($json, "Invalid JSON array");
+        }
+        return new Vector($a);
+    }
+
+    /**
      * Converts a JSON string to a Map.
      *
      * @param $json - The JSON to convert
-     * @throws \Labrys\Web\Exception\Illegible if the JSON is invalid
+     * @throws \Labrys\Net\Exception\Illegible if the JSON is invalid
      */
     public function toMap(?string $json) : Map<string,mixed>
     {
