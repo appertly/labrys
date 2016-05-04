@@ -95,7 +95,7 @@ final class CursorId {
 	public function __toString() : string;
 }
 
-final class Cursor<T> implements Traversable<T>, Iterator<T> {
+final class Cursor<T> implements \Traversable<T>, \Iterator<T> {
 	public function __debugInfo() : array;
 
 	public function getId() : CursorId;
@@ -116,7 +116,7 @@ final class Cursor<T> implements Traversable<T>, Iterator<T> {
 
 	public function toArray(): array<T>;
 
-	public function setTypeMap(array $typemap): void;
+	public function setTypeMap(array<string,?string> $typemap): void;
 }
 
 final class Command {

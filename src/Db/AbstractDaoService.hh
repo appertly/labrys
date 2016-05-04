@@ -22,19 +22,23 @@ namespace Labrys\Db;
 /**
  * Abstract DAO-backed Service
  */
-abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo<Ta>
+abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
 {
     /**
      * Creates a new AbstractDaoService.
      *
-     * @param $dao - The backing dao
      * @param $gatekeeper - The security gatekeeper
      */
-    public function __construct(
-        protected Tb $dao,
-        protected \Labrys\Acl\Gatekeeper $gatekeeper)
+    public function __construct(protected \Labrys\Acl\Gatekeeper $gatekeeper)
     {
     }
+
+    /**
+     * Gets the DAO.
+     *
+     * @return The backing DAO
+     */
+    protected abstract function getDao(): EntityRepo<Ta>;
 
     /**
      * Gets the type of entity produced, mainly for ACL reasons.
@@ -43,7 +47,7 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     public function getType() : string
     {
-        return $this->dao->getType();
+        return $this->getDao()->getType();
     }
 
     /**
@@ -54,7 +58,7 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     public function findOne(\ConstMap<string,mixed> $criteria) : ?Ta
     {
-        return $this->dao->findOne($criteria);
+        return $this->getDao()->findOne($criteria);
     }
 
     /**
@@ -66,7 +70,7 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Traversable<Ta>
     {
-        return $this->dao->findAll($criteria, $pagination);
+        return $this->getDao()->findAll($criteria, $pagination);
     }
 
     /**
@@ -77,9 +81,10 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     public function findById(mixed $id) : ?Ta
     {
-        $entity = $this->dao->findById($id);
-        if ($entity != null) {
-            $this->gatekeeper->assert('read', $this->dao->getType(), $id);
+        $dao = $this->getDao();
+        $entity = $dao->findById($id);
+        if ($entity !== null) {
+            $this->gatekeeper->assert('read', $dao->getType(), $id);
         }
         return $entity;
     }
@@ -93,8 +98,9 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     public function get(mixed $id) : Ta
     {
-        $this->gatekeeper->assert('read', $this->dao->getType(), (string) $id);
-        return $this->dao->get($id);
+        $dao = $this->getDao();
+        $this->gatekeeper->assert('read', $dao->getType(), (string) $id);
+        return $dao->get($id);
     }
 
     /**
@@ -105,8 +111,9 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     public function getAll(\ConstVector<mixed> $ids) : Traversable<Ta>
     {
-        $all = $this->dao->getAll($ids);
-        $type = $this->dao->getType();
+        $dao = $this->getDao();
+        $all = $dao->getAll($ids);
+        $type = $dao->getType();
         foreach ($all as $v) {
             /* HH_FIXME[4005]: This should be a little more fault tolerant */
             $this->gatekeeper->assert('read', $type, $v['_id']);
@@ -122,7 +129,7 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     public function getInstanceMap(Traversable<Ta> $entities) : ImmMap<string,Ta>
     {
-        return $this->dao->getInstanceMap($entities);
+        return $this->getDao()->getInstanceMap($entities);
     }
 
     /**
@@ -132,7 +139,8 @@ abstract class AbstractDaoService<Ta,Tb as EntityRepo<Ta>> implements EntityRepo
      */
     protected function getForUpdate(mixed $id) : Ta
     {
-        $this->gatekeeper->assert('write', $this->dao->getType(), (string)$id);
-        return $this->dao->get($id);
+        $dao = $this->getDao();
+        $this->gatekeeper->assert('write', $dao->getType(), (string)$id);
+        return $dao->get($id);
     }
 }

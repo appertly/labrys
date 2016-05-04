@@ -20,6 +20,7 @@
 namespace Labrys\Db;
 
 use MongoDB\BSON\ObjectID;
+use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\WriteResult;
 
@@ -39,6 +40,10 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      */
     private bool $caching = true;
     /**
+     * @var The MongoDB type map when reading records
+     */
+    private array<string,?string> $typeMap = ['root' => null, 'document' => null];
+    /**
      * @var First-level cache
      */
     private Map<string,T> $cache = Map{};
@@ -49,6 +54,12 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Current accepted configuration values:
      * * `versioned` – Whether to enforce optimistic locking via a version field (default: true)
      * * `caching` – Whether to cache entities by ID (default: true)
+     * * `typeMapRoot` – The type used to unserialize BSON root documents
+     * * `typeMapDocument` – The type used to unserialize BSON nested documents
+     *
+     * As for the `typeMap` options, you can see
+     * [Deserialization from BSON](http://php.net/manual/en/mongodb.persistence.deserialization.php#mongodb.persistence.typemaps)
+     * for more information.
      *
      * @param $manager - The MongoDB Manager
      * @param $collection - The collection to wrap
@@ -67,6 +78,14 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
                 (bool) $options['version'] : true;
             $this->caching = $options->containsKey('caching') ?
                 (bool) $options['caching'] : true;
+            if ($options->containsKey('typeMapRoot')) {
+                $r = $options['typeMapRoot'];
+                $this->typeMap['root'] = $r === null ? null : (string)$r;
+            }
+            if ($options->containsKey('typeMapDocument')) {
+                $d = $options['typeMapDocument'];
+                $this->typeMap['document'] = $d === null ? null : (string)$d;
+            }
         }
     }
 
@@ -78,7 +97,15 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      */
     public function findOne(\ConstMap<string,mixed> $criteria) : ?T
     {
-        return $this->doFindOne($criteria);
+        return $this->maybeCache(
+            $this->doExecute(function (Manager $m, string $c) use ($criteria) {
+                $q = new \MongoDB\Driver\Query($criteria->toArray(), ['limit' => 1]);
+                $res = $m->executeQuery($c, $q);
+                $res->setTypeMap($this->typeMap);
+                $resa = $res->toArray();
+                return count($resa) > 0 ? current($resa) : null;
+            })
+        );
     }
 
     /**
@@ -88,9 +115,29 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * @param $pagination - Optional pagination parameters
      * @return The objects found or null if none
      */
-    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : \Traversable<T>
+    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Cursor<T>
     {
-        return $this->doFindMany($criteria, $pagination);
+        /* HH_IGNORE_ERROR[4101]: Cursor will return whatever the user specifies in the typeMap */
+        return $this->doExecute(function (Manager $m, string $c) use ($criteria, $pagination) {
+            $qo = [];
+            if ($pagination) {
+                if ($pagination->getMax() != PHP_INT_MAX) {
+                    $qo['limit'] = $pagination->getMax();
+                }
+                $qo['skip'] = $pagination->getOffset();
+                $sorts = [];
+                foreach ($pagination->getOrder() as $k => $v) {
+                    $sorts[$k] = $v ? 1 : -1;
+                }
+                if (count($sorts) > 0) {
+                    $qo['sort'] = $sorts;
+                }
+            }
+            $q = new \MongoDB\Driver\Query($criteria->toArray(), $qo);
+            $res = $m->executeQuery($c, $q);
+            $res->setTypeMap($this->typeMap);
+            return $res;
+        });
     }
 
     /**
@@ -101,9 +148,8 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      */
     public function findById(mixed $id) : ?T
     {
-        return $this->cache->containsKey((string)$id) ?
-            $this->cache[(string)$id] :
-            $this->doFindOne(ImmMap{'_id' => $this->toId($id)});
+        return $this->getFromCache((string)$id) ??
+            $this->findOne(ImmMap{'_id' => $this->toId($id)});
     }
 
     /**
@@ -132,7 +178,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
         $mids = $ids->map(
             $a ==> $a instanceof ObjectID ? $a : new ObjectID((string) $a)
         );
-        return $this->maybeCacheAll($this->doFindMany(ImmMap{'_id' => ['$in' => $mids->toArray()]}));
+        return $this->maybeCacheAll($this->findAll(ImmMap{'_id' => ['$in' => $mids->toArray()]}));
     }
 
     /**
@@ -148,59 +194,6 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
             $instances[(string)$this->getId($entity)] = $entity;
         }
         return $instances->toImmMap();
-    }
-
-    /**
-     * Finds a single document given the criteria.
-     *
-     * @param $criteria - The query criteria
-     * @return The document found, or null
-     * @throws \Labrys|Db\Exception If a database problem occurs
-     */
-    protected function doFindOne(\ConstMap<string,mixed> $criteria) : ?T
-    {
-        return $this->maybeCache(
-            $this->doExecute(function (Manager $m, string $c) use ($criteria) {
-                $q = new \MongoDB\Driver\Query($criteria->toArray(), ['limit' => 1]);
-                $res = $m->executeQuery($c, $q);
-                $res->setTypeMap(['root' => 'array', 'document' => 'array']);
-                $resa = $res->toArray();
-                return count($resa) > 0 ? current($resa) : null;
-            })
-        );
-    }
-
-    /**
-     * Finds a single document given the criteria.
-     *
-     * @param $criteria - The query criteria
-     * @param $pagination - Optional pagination settings
-     * @return The documents found, usually a `MongoCursor`
-     * @throws \Labrys|Db\Exception If a database problem occurs
-     */
-    protected function doFindMany(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : \MongoDB\Driver\Cursor<T>
-    {
-        /* HH_IGNORE_ERROR[4101]: Cursor is always going to return array right now */
-        return $this->doExecute(function (Manager $m, string $c) use ($criteria, $pagination) {
-            $qo = [];
-            if ($pagination) {
-                if ($pagination->getMax() != PHP_INT_MAX) {
-                    $qo['limit'] = $pagination->getMax();
-                }
-                $qo['skip'] = $pagination->getOffset();
-                $sorts = [];
-                foreach ($pagination->getOrder() as $k => $v) {
-                    $sorts[$k] = $v ? 1 : -1;
-                }
-                if (count($sorts) > 0) {
-                    $qo['sort'] = $sorts;
-                }
-            }
-            $q = new \MongoDB\Driver\Query($criteria->toArray(), $qo);
-            $res = $m->executeQuery($c, $q);
-            $res->setTypeMap(['root' => 'array', 'document' => 'array']);
-            return $res;
-        });
     }
 
     /**
@@ -251,13 +244,14 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
         $mid = $this->toId($id);
         $orig = $this->get($id);
 
-        // check optimistic locking
         $ops = [];
         if ($extraOps) {
             foreach ($extraOps as $k => $v) {
                 $ops[$k] = $v;
             }
         }
+
+        // check optimistic locking
         if ($this->versioned) {
             if (array_key_exists('version', $record)) {
                 if (is_array($orig) && $orig['version'] > $record['version']) {
@@ -342,7 +336,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * @param $entities - The entities to possibly cache
      * @return The same entities that came in
      */
-    protected function maybeCacheAll(\MongoDB\Driver\Cursor<T> $entities) : Traversable<T>
+    protected function maybeCacheAll(Cursor<T> $entities) : Traversable<T>
     {
         if ($this->caching) {
             $results = $entities->toArray();
@@ -384,6 +378,6 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      */
     protected function getFromCache(string $id) : ?T
     {
-        return $this->cache->containsKey($id) ? $this->cache[$id] : null;
+        return $this->cache[$id] ?? null;
     }
 }
