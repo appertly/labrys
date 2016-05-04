@@ -4,6 +4,7 @@
     "description": "A library that helps you write web applications in Hack",
     "keywords": ["hack", "web", "webapp", "web application"],
     "homepage": "http://gitlab.com/appertly/labrys",
+    "license": "Apache-2.0",
     "require": {
         "hhvm": ">=3.9.0",
         "caridea/acl": "^2.0.0",
@@ -16,11 +17,9 @@
         "mongodb/mongodb": "1.1.x-dev"
     },
     "require-dev": {
-        "phpunit/phpunit-skeleton-generator": "~2.0",
-        "phpunit/phpunit": "~5.2.0",
+        "hackpack/hackunit": "~0.6",
         "hack-psr/psr7-http-message-hhi": "dev-master",
-        "libreworks/psr3-log-hhi": "~1.0.0",
-        "91carriage/phpunit-hhi": "~5.2.1"
+        "libreworks/psr3-log-hhi": "~1.0.0"
     },
     "autoload": {
         "classmap": [
