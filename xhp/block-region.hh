@@ -19,27 +19,20 @@
  */
 
 /**
- * Page Footer
+ * A region for several blocks.
  */
-class :ui:pagefoot extends :x:element implements HasXHPHelpers
+class :labrys:block-region extends :x:element implements HasXHPHelpers
 {
-    use XHPHelpers, XHPAsync;
+    use XHPHelpers;
 
     category %flow;
-    children empty;
-    attribute :xhp:html-element,
-        Labrys\Web\ViewService service @required;
+    children (:labrys:block)*;
+    attribute :xhp:html-element;
 
-    protected async function asyncRender(): Awaitable<XHPRoot>
+    protected function render(): XHPRoot
     {
-        $blocks = <ui:block-region />;
-        foreach ($this->:service->getBlocks('foot') as $block) {
-            $blocks->appendChild(
-                <ui:block block={$block} />
-            );
-        }
-        return <footer class="page-footer" role="contentinfo">
-            {$blocks}
-        </footer>;
+        return <div class="region clearfix">
+            {$this->getChildren()}
+        </div>;
     }
 }

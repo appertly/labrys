@@ -19,27 +19,27 @@
  */
 
 /**
- * Login form XHP tag
+ * Page Footer
  */
-class :ui:flash-messages extends :x:element implements HasXHPHelpers
+class :labrys:pagefoot extends :x:element implements HasXHPHelpers
 {
-    use XHPHelpers, XHPAsync;
+    use XHPHelpers;
 
     category %flow;
-    attribute :xhp:html-element,
-        \Labrys\Web\ViewService service @required;
+    children empty;
+    attribute :footer,
+        Labrys\Web\ViewService service @required;
 
-    protected async function asyncRender(): Awaitable<XHPRoot>
+    protected function render(): XHPRoot
     {
-        $container = <div class="flash-messages"/>;
-        foreach ($this->:service->getFlashMessages() as $status => $messages) {
-            $status = substr($status, 0, 4) === 'msg-' ? substr($status, 4) : 'info';
-            $hu = <axe:heads-up status={$status}/>;
-            foreach ($messages as $message) {
-                $hu->appendChild(<p>{$message}</p>);
-            }
-            $container->appendChild($hu);
+        $blocks = <labrys:block-region />;
+        foreach ($this->:service->getBlocks('foot') as $block) {
+            $blocks->appendChild(
+                <labrys:block block={$block} />
+            );
         }
-        return $container;
+        return <footer class="page-footer" role="contentinfo">
+            {$blocks}
+        </footer>;
     }
 }

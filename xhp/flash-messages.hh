@@ -19,22 +19,27 @@
  */
 
 /**
- * A Button with an icon and a label.
+ * Flash messages using the `axe:heads-up` tag.
  */
-class :ui:button extends :x:element implements HasXHPHelpers
+class :labrys:flash-messages extends :x:element implements HasXHPHelpers
 {
     use XHPHelpers;
 
-    category %flow, %phrase, %interactive;
-    children (pcdata | %phrase)*;
-    attribute :button,
-        ?Stringish icon;
+    category %flow;
+    attribute :xhp:html-element,
+        Labrys\Web\ViewService service @required;
 
     protected function render(): XHPRoot
     {
-        return <button class="btn">
-            <ui:icon icon={$this->:icon}/>
-            <span class="button-text">{$this->getChildren()}</span>
-        </button>;
+        $container = <div class="flash-messages"/>;
+        foreach ($this->:service->getFlashMessages() as $status => $messages) {
+            $status = substr($status, 0, 4) === 'msg-' ? substr($status, 4) : 'info';
+            $hu = <axe:heads-up status={$status}/>;
+            foreach ($messages as $message) {
+                $hu->appendChild(<p>{$message}</p>);
+            }
+            $container->appendChild($hu);
+        }
+        return $container;
     }
 }

@@ -3,23 +3,27 @@
     "type": "library",
     "description": "A library that helps you write web applications in Hack",
     "keywords": ["hack", "web", "webapp", "web application"],
-    "homepage": "http://gitlab.com/appertly/labrys",
+    "homepage": "https://github.com/appertly/labrys",
     "license": "Apache-2.0",
     "require": {
-        "hhvm": ">=3.9.0",
+        "hhvm": ">=3.12.0",
         "caridea/acl": "^2.0.0",
         "caridea/auth": "^2.0.0",
         "caridea/container": "^2.0.0",
         "caridea/http": "^2.0.0",
         "caridea/validate": "^2.0.0",
         "aura/router": "^3.0.0",
-        "appertly/axe": "~0.1",
-        "mongodb/mongodb": "1.1.x-dev"
+        "appertly/axe": "~0.1"
     },
     "require-dev": {
         "hackpack/hackunit": "~0.6",
         "hack-psr/psr7-http-message-hhi": "dev-master",
-        "libreworks/psr3-log-hhi": "~1.0.0"
+        "libreworks/psr3-log-hhi": "~1.0.0",
+        "mongodb/mongodb": "1.1.x-dev"
+    },
+    "suggest": {
+        "ext-mongodb": "Allows use of Labrys\\Db MongoDB classes",
+        "mongodb/mongodb": "Version 1.1.x allows use of Labrys\\Db\\MongoFileService"
     },
     "autoload": {
         "classmap": [

@@ -19,20 +19,22 @@
  */
 
 /**
- * A region for several blocks.
+ * A Button with an icon and a label.
  */
-class :ui:block-region extends :x:element implements HasXHPHelpers
+class :labrys:button extends :x:element implements HasXHPHelpers
 {
-    use XHPHelpers, XHPAsync;
+    use XHPHelpers;
 
-    category %flow;
-    children (:ui:block)*;
-    attribute :xhp:html-element;
+    category %flow, %phrase, %interactive;
+    children (pcdata | %phrase)*;
+    attribute :button,
+        ?Stringish icon;
 
-    protected async function asyncRender(): Awaitable<XHPRoot>
+    protected function render(): XHPRoot
     {
-        return <div class="region clearfix">
-            {$this->getChildren()}
-        </div>;
+        return <button class="btn">
+            <labrys:icon icon={$this->:icon}/>
+            <span class="button-text">{$this->getChildren()}</span>
+        </button>;
     }
 }

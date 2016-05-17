@@ -15,13 +15,13 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
- * A textarea that should have golden ratio width to height
+ * A textarea that should have golden ratio width to height.
  */
-class :ui:golden-textarea extends :x:element implements HasXHPHelpers
+class :labrys:golden-textarea extends :x:element implements HasXHPHelpers
 {
     use XHPHelpers;
 

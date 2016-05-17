@@ -19,26 +19,24 @@
  */
 
 /**
- * An item to appear in a navigation list
+ * Side navigation.
  */
-class :ui:nav-item extends :x:element implements HasXHPHelpers
+class :labrys:side-nav extends :x:element implements HasXHPHelpers
 {
-    use XHPHelpers, XHPAsync;
+    use XHPHelpers;
 
-    children (pcdata | %phrase)*;
-    attribute :xhp:html-element,
-        Stringish href @required,
-        ?Stringish icon;
+    category %flow;
+    children (:labrys:nav-item)*;
+    attribute :labrys:side-box;
 
-    protected async function asyncRender(): Awaitable<XHPRoot>
+    protected function render(): XHPRoot
     {
-        return <li class="nav-item">
-            <a href={$this->:href} class={$this->getAttribute('class')} title={$this->getAttribute('title')}>
-                <ui:icon icon={$this->:icon} />
-                <span class="nav-item-label">
+        return <labrys:side-box class="side-nav" label={$this->:label}>
+            <nav>
+                <ul>
                     {$this->getChildren()}
-                </span>
-            </a>
-        </li>;
+                </ul>
+            </nav>
+        </labrys:side-box>;
     }
 }

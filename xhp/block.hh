@@ -15,28 +15,28 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
- * Side navigation.
+ * A block of content.
  */
-class :ui:side-nav extends :x:element implements HasXHPHelpers
+class :labrys:block extends :x:element implements HasXHPHelpers
 {
     use XHPHelpers, XHPAsync;
 
     category %flow;
-    children (:ui:nav-item)*;
-    attribute :ui:side-box;
+    children empty;
+    attribute :xhp:html-element,
+        Labrys\Web\Block block @required,
+        ?Psr\Http\Message\ServerRequestInterface request = null;
 
     protected async function asyncRender(): Awaitable<XHPRoot>
     {
-        return <ui:side-box class="side-nav" label={$this->:label}>
-            <nav>
-                <ul>
-                    {$this->getChildren()}
-                </ul>
-            </nav>
-        </ui:side-box>;
+        $block = $this->:block;
+        $kid = await $block->compose($this->:request);
+        return <div class={"block {$block->getRegion()}-block"}>
+            {$kid}
+        </div>;
     }
 }

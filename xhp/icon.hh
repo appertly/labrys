@@ -15,26 +15,25 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
- * A link styled as a button.
+ * FontAwesome icon
  */
-class :ui:link-button extends :x:element implements HasXHPHelpers
+class :labrys:icon extends :x:element implements HasXHPHelpers
 {
-    use XHPHelpers, XHPAsync;
+    use XHPHelpers;
 
-    category %flow, %phrase, %interactive;
-    children (pcdata | %flow)*;
-    attribute :a,
-        ?Stringish icon;
+    category %flow, %phrase;
+    children empty;
+    attribute :xhp:html-element,
+        ?Stringish icon @required;
 
-    protected async function asyncRender(): Awaitable<XHPRoot>
+    protected function render(): XHPRoot
     {
-        return <a class="btn">
-            <ui:icon icon={$this->:icon}/>
-            <span class="button-text">{$this->getChildren()}</span>
-        </a>;
+        return $this->:icon !== null ?
+            <i class={"fa fa-" . $this->:icon} role="presentation"/> :
+            <x:frag/>;
     }
 }

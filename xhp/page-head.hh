@@ -19,26 +19,27 @@
  */
 
 /**
- * A box that might appear in a sidebar.
+ * Page Header
  */
-class :ui:side-box extends :x:element implements HasXHPHelpers
+class :labrys:pagehead extends :x:element implements HasXHPHelpers
 {
-    use XHPHelpers, XHPAsync;
+    use XHPHelpers;
 
-    category %flow, %sectioning;
-    children (pcdata | %flow)*;
-    attribute :xhp:html-element,
-        Stringish label @required;
+    category %flow, %heading;
+    children empty;
+    attribute :header,
+        Labrys\Web\ViewService service @required;
 
-    protected async function asyncRender(): Awaitable<XHPRoot>
+    protected function render(): XHPRoot
     {
-        return <section class="side-box">
-            <header class="side-box-header">
-                <h1>{$this->:label}</h1>
-            </header>
-            <div class="side-box-contents">
-                {$this->getChildren()}
-            </div>
-        </section>;
+        $blocks = <labrys:block-region />;
+        foreach ($this->:service->getBlocks('head') as $block) {
+            $blocks->appendChild(
+                <labrys:block block={$block} />
+            );
+        }
+        return <header class="page-header" role="banner">
+            {$blocks}
+        </header>;
     }
 }

@@ -19,24 +19,26 @@
  */
 
 /**
- * A block of content.
+ * An item to appear in a navigation list
  */
-class :ui:block extends :x:element implements HasXHPHelpers
+class :labrys:nav-item extends :x:element implements HasXHPHelpers
 {
-    use XHPHelpers, XHPAsync;
+    use XHPHelpers;
 
-    category %flow;
-    children empty;
-    attribute :xhp:html-element,
-        Labrys\Web\Block block @required,
-        ?Psr\Http\Message\ServerRequestInterface request = null;
+    children (pcdata | %phrase)*;
+    attribute :li,
+        Stringish href @required,
+        ?Stringish icon;
 
-    protected async function asyncRender(): Awaitable<XHPRoot>
+    protected function render(): XHPRoot
     {
-        $block = $this->:block;
-        $kid = await $block->compose($this->:request);
-        return <div class={"block {$block->getRegion()}-block"}>
-            {$kid}
-        </div>;
+        return <li class="nav-item">
+            <a href={$this->:href} class={$this->getAttribute('class')} title={$this->getAttribute('title')}>
+                <labrys:icon icon={$this->:icon} />
+                <span class="nav-item-label">
+                    {$this->getChildren()}
+                </span>
+            </a>
+        </li>;
     }
 }
