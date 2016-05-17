@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web\Exception;
 
@@ -39,7 +39,7 @@ class Unroutable extends \RuntimeException implements \Labrys\Web\Exception
     /**
      * Gets the headers to set.
      *
-     * @return associative array of header names to values
+     * @return - associative array of header names to values
      */
     public function getHeaders() : ImmMap<string,string>
     {
@@ -50,7 +50,7 @@ class Unroutable extends \RuntimeException implements \Labrys\Web\Exception
      * Creates a new Unroutable based on a failed Aura Route.
      *
      * @param $failedRoute The failed Aura Route
-     * @return A new Unroutable
+     * @return - A new Unroutable
      */
     public static function fromRoute(\Aura\Router\Route $failedRoute) : Unroutable
     {

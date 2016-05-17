@@ -15,9 +15,11 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
+
+use Axe\Page;
 
 /**
  * Creates Views and broadcasts the render event.
@@ -37,7 +39,7 @@ class ViewService
     /**
      * Creates a new ViewService.
      *
-     * @param $container The dependency injection container
+     * @param $container - The dependency injection container
      */
     public function __construct(private \Caridea\Container\Container $container)
     {
@@ -46,7 +48,8 @@ class ViewService
     /**
      * Gets the Page for this request (created lazily).
      *
-     * @param $title The page title
+     * @param $title - The page title
+     * @return - A Page
      */
     public function getPage(\Stringish $title) : Page
     {
@@ -76,7 +79,8 @@ class ViewService
     /**
      * Generates a page title.
      *
-     * @param $title The page title
+     * @param $title - The page title
+     * @return - The formatted page title
      */
     protected function getPageTitle(?\Stringish $title) : string
     {
@@ -130,7 +134,7 @@ class ViewService
     /**
      * Gets any flash messages in the session keyed by status.
      *
-     * @return ImmMap of flash messages
+     * @return - ImmMap of flash messages
      */
     public function getFlashMessages() : ImmMap<string,ImmVector<string>>
     {
@@ -162,7 +166,7 @@ class ViewService
      * Gets all blocks registered for a given region
      *
      * @param $region - The region to search
-     * @return The found blocks in that region, or an empty array.
+     * @return - The found blocks in that region, or an empty array.
      */
     public function getBlocks(string $region) : ImmVector<Block>
     {

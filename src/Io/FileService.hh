@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Io;
 
@@ -29,7 +29,7 @@ interface FileService<Tk,Tv>
      *
      * @param $file - The uploaded file
      * @param $metadata - Any additional fields to persist
-     * @return The document ID of the stored file
+     * @return - The document ID of the stored file
      */
     public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata) : Tk;
 
@@ -37,7 +37,7 @@ interface FileService<Tk,Tv>
      * Gets the file as a PSR-7 Stream.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The readable stream
+     * @return - The readable stream
      */
     public function messageStream(mixed $id): \Psr\Http\Message\StreamInterface;
 
@@ -45,7 +45,7 @@ interface FileService<Tk,Tv>
      * Gets a stream resource for the given ID.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The stream
+     * @return - The stream
      */
     public function resource(mixed $id): resource;
 
@@ -61,7 +61,7 @@ interface FileService<Tk,Tv>
      * Gets a stored file.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The stored file
+     * @return - The stored file
      */
     public function read(mixed $id) : ?Tv;
 
@@ -69,7 +69,7 @@ interface FileService<Tk,Tv>
      * Finds several files by some arbitrary criteria.
      *
      * @param $criteria - Field to value pairs
-     * @return The objects found
+     * @return - The objects found
      */
     public function readAll(\ConstMap<string,mixed> $criteria) : \Traversable<Tv>;
 

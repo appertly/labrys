@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Net;
 
@@ -28,7 +28,8 @@ class XmlMapper
      * Converts a string to a SimpleXMLElement.
      *
      * @param $xml - The string to convert
-     * @throws \Labrys\Web\Exception\Illegible If the string is not XML
+     * @return - The XML version
+     * @throws \Labrys\Net\Exception\Illegible If the string is not XML
      */
     public function toXml(?string $xml) : \SimpleXMLElement
     {

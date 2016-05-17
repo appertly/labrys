@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Auth;
 
@@ -27,10 +27,10 @@ interface UserProvider<T>
     /**
      * Gets the current authenticated User, loaded from the Principal
      *
-     * @return The current authenticated user
+     * @return - The current authenticated user
      * @throws \UnexpectedValueException if the current principal is anonymous
      * @throws \Labrys\Db\Exception\Retrieval If the entity doesn't exist
-     * @throws \Labrys|Db\Exception\System If any other database problem occurs
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
      */
     public function getUser() : User<T>;
 }

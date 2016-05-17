@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys;
 
@@ -28,19 +28,19 @@ use Caridea\Container\Objects;
 class System
 {
     /**
-     * @var $modules Instantiated modules
+     * @var Instantiated modules
      */
     private ImmVector<Module> $modules;
     /**
-     * @var $config The config container
+     * @var The config container
      */
     private Properties $config;
     /**
-     * @var $backend The backend container
+     * @var The backend container
      */
     private Objects $backend;
     /**
-     * @var $frontend The frontend container
+     * @var The frontend container
      */
     private Objects $frontend;
 
@@ -107,7 +107,7 @@ class System
     /**
      * Gets the configuration settings container.
      *
-     * @return The config container
+     * @return - The config container
      */
     public function getConfigContainer() : Properties
     {
@@ -117,7 +117,7 @@ class System
     /**
      * Gets the container with backend classes.
      *
-     * @return The backend container
+     * @return - The backend container
      */
     public function getBackendContainer() : Objects
     {
@@ -127,7 +127,7 @@ class System
     /**
      * Gets the container with frontend classes.
      *
-     * @return The frontend container
+     * @return - The frontend container
      */
     public function getFrontendContainer() : Objects
     {
@@ -137,7 +137,7 @@ class System
     /**
      * Gets the loaded modules.
      *
-     * @return The loaded modules
+     * @return - The loaded modules
      */
     public function getModules() : ImmVector<Module>
     {

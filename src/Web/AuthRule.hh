@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
 
@@ -33,7 +33,7 @@ class AuthRule implements \Aura\Router\Rule\RuleInterface
      *
      * @param $request - The HTTP request
      * @param $route - The route.
-     * @return True on success, false on failure
+     * @return - True on success, false on failure
      */
     public function __invoke(Request $request, \Aura\Router\Route $route): bool
     {
@@ -44,7 +44,7 @@ class AuthRule implements \Aura\Router\Rule\RuleInterface
      * Gets the stored principal, or the anonymous user if none was found.
      *
      * @param $request - The HTTP request
-     * @return The authenticated principal
+     * @return - The authenticated principal
      */
     protected function getPrincipal(Request $request) : Principal
     {

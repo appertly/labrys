@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Db;
 
@@ -93,7 +93,8 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Finds a single record by some arbitrary criteria.
      *
      * @param $criteria - Field to value pairs
-     * @return The object found or null if none
+     * @return - The object found or null if none
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function findOne(\ConstMap<string,mixed> $criteria) : ?T
     {
@@ -113,7 +114,8 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      *
      * @param $criteria - Field to value pairs
      * @param $pagination - Optional pagination parameters
-     * @return The objects found or null if none
+     * @return - The objects found or null if none
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Cursor<T>
     {
@@ -143,8 +145,9 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Gets a single document by ID.
      *
-     * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The BSON document
+     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
+     * @return - The BSON document
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function findById(mixed $id) : ?T
     {
@@ -155,9 +158,10 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Gets a single document by ID, throwing an exception if it's not found.
      *
-     * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The BSON document
-     * @throws \Labrys|Db\Exception\Retrieval If the document doesn't exist
+     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
+     * @return - The BSON document
+     * @throws \Labrys\Db\Exception\Retrieval If the document doesn't exist
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
      */
     public function get(mixed $id) : T
     {
@@ -168,7 +172,8 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Gets several documents by ID.
      *
      * @param $ids - Array of either strings or `ObjectID`s.
-     * @return The results
+     * @return - The results
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function getAll(\ConstVector<mixed> $ids) : Traversable<T>
     {
@@ -185,7 +190,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Gets a Map that relates identifier to instance
      *
      * @param $entities - The entities to "zip"
-     * @return The instances keyed by identifier
+     * @return - The instances keyed by identifier
      */
     public function getInstanceMap(Traversable<T> $entities) : ImmMap<string,T>
     {
@@ -200,10 +205,10 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Creates a record.
      *
      * @param $record - The record to insert, ready to go
-     * @return Whatever MongoDB returns
+     * @return - Whatever MongoDB returns
      * @throws \Caridea\Validate\Exception\Invalid if validation fails
-     * @throws \Labrys|Db\Exception\Integrity If a unique constraint is violated
-     * @throws \Labrys|Db\Exception\System If any other database problem occurs
+     * @throws \Labrys\Db\Exception\Integrity If a unique constraint is violated
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
      */
     protected function doCreate(\ConstMap<string,mixed> $record): WriteResult
     {
@@ -227,14 +232,14 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Updates a record.
      *
-     * @param $id - The document identifier, either a string or `ObjectID`
+     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
      * @param $record - The record to update, ready to go
-     * @return Whatever MongoDB returns
+     * @return - Whatever MongoDB returns
      * @throws \Caridea\Validate\Exception\Invalid if validation fails
-     * @throws \Labrys|Db\Exception\Retrieval If the document doesn't exist
-     * @throws \Labrys|Db\Exception\Integrity If a unique constraint is violated
-     * @throws \Labrys|Db\Exception\Concurrency If optimistic locking fails
-     * @throws \Labrys|Db\Exception\System If any other database problem occurs
+     * @throws \Labrys\Db\Exception\Retrieval If the document doesn't exist
+     * @throws \Labrys\Db\Exception\Integrity If a unique constraint is violated
+     * @throws \Labrys\Db\Exception\Concurrency If optimistic locking fails
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
      */
     protected function doUpdate(mixed $id, \ConstMap<string,mixed> $record, ?\ConstMap<string,mixed> $extraOps = null): WriteResult
     {
@@ -280,9 +285,9 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Deletes a record.
      *
-     * @param $id - The document identifier, either a string or `ObjectID`
-     * @return Whatever MongoDB returns
-     * @throws \Labrys|Db\Exception If a database problem occurs
+     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
+     * @return - Whatever MongoDB returns
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     protected function doDelete(mixed $id): WriteResult
     {
@@ -301,8 +306,8 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Exceptions are caught and translated.
      *
      * @param $cb - The closure to execute, takes the entityManager
-     * @return Whatever the function returns, this method also returns
-     * @throws \Labrys|Db\Exception If a database problem occurs
+     * @return - Whatever the function returns, this method also returns
+     * @throws \Labrys\Db\Exception If a database problem occurs
      */
     protected function doExecute<Ta>((function(Manager, string): Ta) $cb) : Ta
     {
@@ -317,7 +322,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Possibly add the entity to the cache.
      *
      * @param $entity - The entity to possibly cache
-     * @return The same entity that came in
+     * @return - The same entity that came in
      */
     protected function maybeCache(?T $entity) : ?T
     {
@@ -334,7 +339,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Possibly add entities to the cache.
      *
      * @param $entities - The entities to possibly cache
-     * @return The same entities that came in
+     * @return - The same entities that came in
      */
     protected function maybeCacheAll(Cursor<T> $entities) : Traversable<T>
     {
@@ -374,7 +379,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      * Gets an entry from the cache
      *
      * @param $id - The cache key
-     * @return The entity found or null
+     * @return - The entity found or null
      */
     protected function getFromCache(string $id) : ?T
     {

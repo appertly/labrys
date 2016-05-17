@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Auth;
 
@@ -27,21 +27,21 @@ interface User<T> extends Owner<T>
     /**
      * Gets the user's email.
      *
-     * @return The user's email
+     * @return - The user's email
      */
     public function getEmail(): string;
 
     /**
      * Gets the user's owner, either a group, or itself.
      *
-     * @return The owner record (possibly `$this`)
+     * @return - The owner record (possibly `$this`)
      */
     public function getOwner(): Owner<T>;
 
     /**
      * Gets any groups to which the owner belongs.
      *
-     * @return The groups
+     * @return - The groups
      */
     public function getGroups(): ImmVector<Group<T>>;
 }

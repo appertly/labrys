@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
 
@@ -75,7 +75,7 @@ class Front
      *
      * @param $request - The server request
      * @param $response - The response
-     * @return The new response
+     * @return - The new response
      * @throws Exception\Unroutable if route matching fails
      * @throws Exception\Dispatch if a controller method can't be invoked
      */

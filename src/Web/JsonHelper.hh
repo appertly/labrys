@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
 
@@ -29,9 +29,9 @@ trait JsonHelper
     /**
      * Send something as JSON
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The response
-     * @param mixed $payload The object to serialize
-     * @return The JSON response
+     * @param $response - The response
+     * @param $payload - The object to serialize
+     * @return - The JSON response
      */
     protected function sendJson(Response $response, mixed $payload) : Response
     {
@@ -45,7 +45,7 @@ trait JsonHelper
      * @param $response - The response
      * @param $type - The entity type
      * @param $id - The entity ids
-     * @return The JSON response
+     * @return - The JSON response
      */
     protected function sendCreated(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
     {
@@ -59,7 +59,7 @@ trait JsonHelper
      * @param $response - The response
      * @param $type - The entity type
      * @param $ids - The entity ids
-     * @return The JSON response
+     * @return - The JSON response
      */
     protected function sendDeleted(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
     {
@@ -73,7 +73,7 @@ trait JsonHelper
      * @param $type - The entity type
      * @param $ids - The entity ids
      * @param $extra - Any extra data to serialize
-     * @return The JSON response
+     * @return - The JSON response
      */
     protected function sendUpdated(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
     {
@@ -88,7 +88,7 @@ trait JsonHelper
      * @param $type - The entity type
      * @param $ids - The entity ids
      * @param $extra - Any extra data to serialize
-     * @return The JSON response
+     * @return - The JSON response
      */
     protected function sendVerb(string $verb, Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
     {

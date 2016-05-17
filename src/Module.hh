@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys;
 
@@ -31,14 +31,14 @@ abstract class Module
      * `author`, and `description`. Feel free to add any additional fields you
      * like, such as `license`, or `copyright`.
      *
-     * @return A Map of the module metadata
+     * @return - A Map of the module metadata
      */
     public abstract function getMeta() : ImmMap<string,string>;
 
     /**
      * Gets static configuration settings.
      *
-     * @return The module configuration settings
+     * @return - The module configuration settings
      */
     public function getConfig() : ImmMap<string,mixed>
     {

@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
 
@@ -27,12 +27,14 @@ interface Block
     /**
      * Gets the region in which this block should appear.
      *
-     * @return The region
+     * @return - The region
      */
     public function getRegion(): string;
 
     /**
      * Gets the display order of this block in its region.
+     *
+     * @return - The display order
      */
     public function getOrder(): int;
 
@@ -40,7 +42,7 @@ interface Block
      * Compose the content.
      *
      * @param $request - The server request
-     * @return The XHP node
+     * @return - The XHP node
      */
     public function compose(?\Psr\Http\Message\ServerRequestInterface $request = null) : Awaitable<\XHPRoot>;
 }

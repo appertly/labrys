@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys;
 
@@ -40,7 +40,7 @@ class MapWrap<Tk,Tv>
     /**
      * Gets the original delegate map.
      *
-     * @return The original delegate map
+     * @return - The original delegate map
      */
     public function getMap(): \ConstMap<Tk,Tv>
     {
@@ -51,7 +51,7 @@ class MapWrap<Tk,Tv>
      * Whether the delegate map contains the key.
      *
      * @param $key - The key
-     * @return Whether this value is contained
+     * @return - Whether this value is contained
      */
     public function containsKey(Tk $key): bool
     {
@@ -62,7 +62,7 @@ class MapWrap<Tk,Tv>
      * Convenience method that delegates the Map's get
      *
      * @param $k - The key
-     * @return The value found (or null)
+     * @return - The value found (or null)
      */
     public function get(Tk $key): ?Tv
     {
@@ -73,7 +73,7 @@ class MapWrap<Tk,Tv>
      * Gets a value as a trimmed string.
      *
      * @param $key - The key
-     * @return A trimmed string
+     * @return - A trimmed string
      */
     public function trim(Tk $key): string
     {
@@ -85,7 +85,7 @@ class MapWrap<Tk,Tv>
      * Looks for a Map at the given key; automatically converts arrays.
      *
      * @param $key - The key
-     * @return A map (potentially empty)
+     * @return - A map (potentially empty)
      */
     public function sub(Tk $key): Map<Tk,Tv>
     {
@@ -103,7 +103,7 @@ class MapWrap<Tk,Tv>
      * Looks for a MapWrap at the given key; automatically converts arrays.
      *
      * @param $key - The key
-     * @return A MapWrap (potentially empty)
+     * @return - A MapWrap (potentially empty)
      */
     public function subw(Tk $key): MapWrap<Tk,Tv>
     {
@@ -119,7 +119,7 @@ class MapWrap<Tk,Tv>
      * Gets a value in nested maps.
      *
      * @param $key - The dot-separated key
-     * @return The nested value
+     * @return - The nested value
      */
     public function nested(string $key): mixed
     {
@@ -143,7 +143,7 @@ class MapWrap<Tk,Tv>
      * Gets a MapWrap in nested maps.
      *
      * @param $key - The dot-separated key
-     * @return The nested MapWrap
+     * @return - The nested MapWrap
      */
     public function nestedw(string $key): MapWrap<arraykey,mixed>
     {

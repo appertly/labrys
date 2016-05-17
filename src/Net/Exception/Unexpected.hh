@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Net\Exception;
 
@@ -50,7 +50,7 @@ class Unexpected extends \UnexpectedValueException implements \Labrys\Net\Except
     /**
      * Gets the cURL handle info.
      *
-     * @return the handle info
+     * @return - the handle info
      */
     public function getInfo() : ImmMap<string,mixed>
     {
@@ -60,7 +60,7 @@ class Unexpected extends \UnexpectedValueException implements \Labrys\Net\Except
     /**
      * Gets the response body.
      *
-     * @return the response body
+     * @return - the response body
      */
     public function getBody() : ?string
     {

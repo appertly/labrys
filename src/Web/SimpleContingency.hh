@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
 
@@ -80,7 +80,7 @@ class SimpleContingency implements Contingency
      * @param $request - The request
      * @param $response - The response
      * @param $e - The exception to process
-     * @return The new response
+     * @return - The new response
      */
     public function process(Request $request, Response $response, \Exception $e) : Response
     {

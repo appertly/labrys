@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Net\Exception;
 
@@ -37,7 +37,7 @@ class Misconfigured extends Unreachable
      * Determines whether the code returned from cURL is one this class supports.
      *
      * @param $code - The code
-     * @return whether this class should be used
+     * @return - whether this class should be used
      */
     public static function isUsable(int $code) : bool
     {

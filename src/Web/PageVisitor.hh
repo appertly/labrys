@@ -15,9 +15,11 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
+
+use Axe\Page;
 
 /**
  * Allows modules to alter the page output.

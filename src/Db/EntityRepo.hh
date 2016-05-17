@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Db;
 
@@ -27,7 +27,7 @@ interface EntityRepo<T>
     /**
      * Gets the type of entity produced, mainly for ACL reasons.
      *
-     * @return The entity type
+     * @return - The entity type
      */
     public function getType() : string;
 
@@ -35,7 +35,7 @@ interface EntityRepo<T>
      * Gets a Map that relates identifier to instance
      *
      * @param $entities - The entities to "zip"
-     * @return The instances keyed by identifier
+     * @return - The instances keyed by identifier
      */
     public function getInstanceMap(Traversable<T> $entities) : ImmMap<string,T>;
 
@@ -43,7 +43,8 @@ interface EntityRepo<T>
      * Finds a single record by some arbitrary criteria.
      *
      * @param $criteria Field to value pairs
-     * @return The object found or null if none
+     * @return - The object found or null if none
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function findOne(\ConstMap<string,mixed> $criteria) : ?T;
 
@@ -52,7 +53,8 @@ interface EntityRepo<T>
      *
      * @param $criteria - Field to value pairs
      * @param $pagination - Optional pagination parameters
-     * @return The objects found or null if none
+     * @return - The objects found or null if none
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Traversable<T>;
 
@@ -60,7 +62,8 @@ interface EntityRepo<T>
      * Gets a single document by ID.
      *
      * @param $id - The document identifier
-     * @return The entity
+     * @return - The entity
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function findById(mixed $id) : ?T;
 
@@ -68,8 +71,9 @@ interface EntityRepo<T>
      * Gets a single document by ID, throwing an exception if it's not found.
      *
      * @param $id - The document identifier
-     * @return The entity
+     * @return - The entity
      * @throws \Labrys|Db\Exception\Retrieval If the document doesn't exist
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
      */
     public function get(mixed $id) : T;
 
@@ -77,7 +81,8 @@ interface EntityRepo<T>
      * Gets several documents by ID.
      *
      * @param $ids - Array of identifiers
-     * @return The results
+     * @return - The results
+     * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
     public function getAll(\ConstVector<mixed> $ids) : Traversable<T>;
 }

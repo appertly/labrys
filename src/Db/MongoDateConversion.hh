@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Db;
 
@@ -29,7 +29,7 @@ trait MongoDateConversion
      *
      * @param $value - The value to convert
      * @param $timeZone - Optional Time Zone to set
-     * @return The date if `$value` is a `UTCDateTime`, `null` otherwise
+     * @return - The date if `$value` is a `UTCDateTime`, `null` otherwise
      */
     protected function toDateTime(mixed $value, ?\DateTimeZone $timeZone = null): ?\DateTime
     {
@@ -47,7 +47,7 @@ trait MongoDateConversion
      * Tries to convert a `UTCDateTime` into a `DateTimeImmutable`.
      *
      * @param $value - The value to convert
-     * @return The date if `$value` is a `UTCDateTime`, `null` otherwise
+     * @return - The date if `$value` is a `UTCDateTime`, `null` otherwise
      */
     protected function toDateTimeImmutable(mixed $value): ?\DateTimeImmutable
     {

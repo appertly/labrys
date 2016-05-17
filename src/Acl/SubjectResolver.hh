@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Acl;
 
@@ -28,7 +28,7 @@ interface SubjectResolver
      * Converts the principal into the relevant subjects.
      *
      * @param $principal - The principal
-     * @return A list of subjects
+     * @return - A list of subjects
      */
     public function getSubjects(\Caridea\Auth\Principal $principal) : Traversable<\Caridea\Acl\Subject>;
 }

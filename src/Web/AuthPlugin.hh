@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
 
@@ -43,7 +43,7 @@ class AuthPlugin implements Plugin
      * to take place.
      *
      * @param $request - The server request
-     * @return The request
+     * @return - The request
      */
     public function advise(Request $request): Request
     {
@@ -55,7 +55,7 @@ class AuthPlugin implements Plugin
      *
      * @param $request - The server request
      * @param $response - The response
-     * @return The response
+     * @return - The response
      */
     public function intercept(Request $request, Response $response) : Response
     {

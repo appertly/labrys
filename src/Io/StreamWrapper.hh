@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Io;
 
@@ -70,7 +70,7 @@ class StreamWrapper
      * @return The generated resource
      * @throws \InvalidArgumentException if stream is not readable or writable
      */
-    public static function getResource(\Psr\Http\Message\StreamInterface $stream): resource
+    public static function getResource(StreamInterface $stream): resource
     {
         self::register();
         if ($stream->isReadable()) {

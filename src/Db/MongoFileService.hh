@@ -15,12 +15,13 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Db;
 
 use MongoDB\BSON\ObjectID;
 use MongoDB\GridFS\Bucket;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * File upload service backed by GridFS.
@@ -41,7 +42,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      *
      * @param $file - The uploaded file
      * @param $metadata - Any additional fields to persist
-     * @return The document ID of the stored file
+     * @return - The document ID of the stored file
      */
     public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata) : ObjectID
     {
@@ -63,9 +64,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * Gets the file as a PSR-7 Stream.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The readable stream
+     * @return - The readable stream
      */
-    public function messageStream(mixed $id): \Psr\Http\Message\StreamInterface
+    public function messageStream(mixed $id): StreamInterface
     {
         $file = $this->read($id);
         return new MongoDownloadStream(
@@ -77,7 +78,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * Gets a readable stream resource for the given ID.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The readable stream
+     * @return - The readable stream
      */
     public function resource(mixed $id): resource
     {
@@ -90,7 +91,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * @param $file - The file
      * @param $stream - The stream
      */
-    public function stream(\stdClass $file, \Psr\Http\Message\StreamInterface $stream): void
+    public function stream(\stdClass $file, StreamInterface $stream): void
     {
         $this->bucket->downloadToStream(
             $file->_id,
@@ -102,7 +103,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * Gets a stored file.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
-     * @return The stored file
+     * @return - The stored file
      */
     public function read(mixed $id) : ?\stdClass
     {
@@ -132,7 +133,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * Finds several files by some arbitrary criteria.
      *
      * @param $criteria - Field to value pairs
-     * @return The objects found
+     * @return - The objects found
      */
     public function readAll(\ConstMap<string,mixed> $criteria) : Traversable<\stdClass>
     {
@@ -150,8 +151,8 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * Exceptions are caught and translated.
      *
      * @param $cb - The closure to execute, takes the Bucket
-     * @return Whatever the function returns, this method also returns
-     * @throws \Labrys|Db\Exception If a database problem occurs
+     * @return - Whatever the function returns, this method also returns
+     * @throws \Labrys\Db\Exception If a database problem occurs
      */
     protected function doExecute<Ta>((function(Bucket): Ta) $cb) : Ta
     {

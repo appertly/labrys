@@ -13,7 +13,7 @@
         "caridea/http": "^2.0.0",
         "caridea/validate": "^2.0.0",
         "aura/router": "^3.0.0",
-        "facebook/xhp-lib": "~2.2",
+        "appertly/axe": "~0.1",
         "mongodb/mongodb": "1.1.x-dev"
     },
     "require-dev": {

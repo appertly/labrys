@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Net;
 
@@ -28,7 +28,10 @@ trait CurlHelper
      * Does a decent job of sending off a PSR-7 request using cURL
      *
      * @param $request - The request
-     * @return The async response
+     * @return - The async response
+     * @throws \Labrys\Net\Exception\Unreachable if the remote server cannot be reached
+     * @throws \Labrys\Net\Exception\Misconfigured if cURL was incorrectly configured
+     * @throws \Labrys\Net\Exception\Unexpected if the remote server returned an error
      */
     protected function send(\Psr\Http\Message\RequestInterface $request) : Awaitable<string>
     {
@@ -66,7 +69,7 @@ trait CurlHelper
     /**
      * Gets a User-Agent string.
      *
-     * @return a reasonable user-agent string
+     * @return - a reasonable user-agent string
      */
     protected function getUserAgent() : string
     {
@@ -86,10 +89,13 @@ trait CurlHelper
      * cURL handle will be created for you), and the cURL request will be executed
      * via async and the `string` result will be retuned.
      *
-     * @param $urlOrHandle - An existing cURL handle or a URL as a `string`. String
-     *                       URLs will create a default cURL GET handle.
-     * @return Awaitable<string> - An `Awaitable` representing the `string` result
-     *                             of the cURL request.
+     * @param resource|string $urlOrHandle - An existing cURL handle or a
+     *     `string` URL. String URLs will create a default cURL GET handle.
+     * @return - An `Awaitable` representing the `string`
+     *     result of the cURL request.
+     * @throws \Labrys\Net\Exception\Unreachable if the remote server cannot be reached
+     * @throws \Labrys\Net\Exception\Misconfigured if cURL was incorrectly configured
+     * @throws \Labrys\Net\Exception\Unexpected if the remote server returned an error
      */
     protected async function exec(mixed $urlOrHandle): Awaitable<string>
     {

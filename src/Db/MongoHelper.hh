@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Db;
 
@@ -29,7 +29,7 @@ trait MongoHelper
      *
      * @param mixed $id If it's an `ObjectID`, returns that, otherwise creates a
      *        new `ObjectID`.
-     * @return The ObjectID
+     * @return - The ObjectID
      */
     protected function toId(mixed $id) : \MongoDB\BSON\ObjectID
     {
@@ -39,7 +39,7 @@ trait MongoHelper
     /**
      * Gets the current time.
      *
-     * @return The current time
+     * @return - The current time
      */
     protected function now(): \MongoDB\BSON\UTCDateTime
     {
@@ -52,7 +52,7 @@ trait MongoHelper
      *
      * @param $date - The possible string date value, a string, a
      *        `\DateTimeInterface`, or a `\MongoDB\BSON\UTCDateTime`
-     * @return The MongoDB datetime or null
+     * @return - The MongoDB datetime or null
      */
     protected function toDate(mixed $date) : ?\MongoDB\BSON\UTCDateTime
     {
@@ -71,7 +71,7 @@ trait MongoHelper
      *
      * @param $id - The document identifier, either a `\MongoDB\BSON\ObjectID` or string
      * @param $document - The document to check
-     * @return Returns `$document`
+     * @return - Returns `$document`
      * @throws Exception\Retrieval if the document is null
      */
     protected function ensure<Ta>(mixed $id, ?Ta $document) : Ta
@@ -86,8 +86,8 @@ trait MongoHelper
     /**
      * Translates a Mongo exception.
      *
-     * @param \Exception $e The exception to translate
-     * @return \Labrys|Db\Exception The exception to use
+     * @param $e - The exception to translate
+     * @return - The exception to use
      */
     protected static function translateException(\Exception $e): \Exception
     {

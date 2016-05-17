@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Acl;
 
@@ -72,7 +72,7 @@ class Gatekeeper
      * @param $verb - The verb (e.g. 'read', 'write')
      * @param $type - The type of object
      * @param $id - The object identifier
-     * @return Whether the user has access
+     * @return - Whether the user has access
      */
     public function can(string $verb, string $type, mixed $id): bool
     {

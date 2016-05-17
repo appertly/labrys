@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Db;
 
@@ -36,14 +36,14 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     /**
      * Gets the DAO.
      *
-     * @return The backing DAO
+     * @return - The backing DAO
      */
     protected abstract function getDao(): EntityRepo<Ta>;
 
     /**
      * Gets the type of entity produced, mainly for ACL reasons.
      *
-     * @return The entity type
+     * @return - The entity type
      */
     public function getType() : string
     {
@@ -54,7 +54,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      * Finds a single record by some arbitrary criteria.
      *
      * @param $criteria - Field to value pairs
-     * @return The object found or null if none
+     * @return - The object found or null if none
      */
     public function findOne(\ConstMap<string,mixed> $criteria) : ?Ta
     {
@@ -66,7 +66,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      *
      * @param $criteria - Field to value pairs
      * @param $pagination - Optional pagination parameters
-     * @return The objects found or null if none
+     * @return - The objects found or null if none
      */
     public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Traversable<Ta>
     {
@@ -77,7 +77,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      * Gets a single document by ID.
      *
      * @param $id - The document identifier
-     * @return The BSON document
+     * @return - The BSON document
      */
     public function findById(mixed $id) : ?Ta
     {
@@ -93,8 +93,8 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      * Gets a single document by ID, throwing an exception if it's not found.
      *
      * @param $id - The document identifier
-     * @return The entity
-     * @throws \Labrys|Db\Exception\Retrieval If the document doesn't exist
+     * @return - The entity
+     * @throws \Labrys\Db\Exception\Retrieval If the document doesn't exist
      */
     public function get(mixed $id) : Ta
     {
@@ -107,7 +107,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      * Gets several documents by ID.
      *
      * @param $ids - Array of identifiers
-     * @return The results
+     * @return - The results
      */
     public function getAll(\ConstVector<mixed> $ids) : Traversable<Ta>
     {
@@ -125,7 +125,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      * Gets a Map that relates identifier to instance
      *
      * @param $entities - The entities to "zip"
-     * @return The instances keyed by identifier
+     * @return - The instances keyed by identifier
      */
     public function getInstanceMap(Traversable<Ta> $entities) : ImmMap<string,Ta>
     {

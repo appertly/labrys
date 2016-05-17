@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Web;
 
@@ -32,8 +32,8 @@ trait Controller
     /**
      * Gets a Map of the request body content.
      *
-     * @param \Psr\Http\Message\ServerRequestInterface $request The request
-     * @return The Map of request body content
+     * @param $request - The request
+     * @return - The Map of request body content
      */
     protected function getParsedBodyMap(Request $request) : Map<string,mixed>
     {
@@ -44,9 +44,9 @@ trait Controller
     /**
      * Cleanly writes the body to the response.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response
-     * @param \Stringish $body The body to write
-     * @return \Psr\Http\Message\ResponseInterface The same or new response
+     * @param $response - The HTTP response
+     * @param $body - The body to write
+     * @return - The same or new response
      */
     protected function write(Response $response, mixed $body) : Response
     {
@@ -57,10 +57,10 @@ trait Controller
     /**
      * Checks the If-Modified-Since header, maybe sending 304 Not Modified.
      *
-     * @param \Psr\Http\Message\ServerRequestInterface $request The HTTP request
-     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response
-     * @param int $timestamp The timestamp for comparison
-     * @return \Psr\Http\Message\ResponseInterface The same or new response
+     * @param $request - The HTTP request
+     * @param $response - The HTTP response
+     * @param $timestamp - The timestamp for comparison
+     * @return - The same or new response
      */
     protected function ifModSince(Request $request, Response $response, int $timestamp) : Response
     {
@@ -74,7 +74,8 @@ trait Controller
     /**
      * Redirects the user to another URL.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response The HTTP response
+     * @param $response - The HTTP response
+     * @return - The new response
      */
     protected function redirect(Response $response, int $code, string $url) : Response
     {
@@ -85,7 +86,7 @@ trait Controller
      * Gets the stored principal, or the anonymous user if none was found.
      *
      * @param $request - The HTTP request
-     * @return The authenticated principal
+     * @return - The authenticated principal
      */
     protected function getPrincipal(Request $request) : Principal
     {
@@ -97,7 +98,7 @@ trait Controller
     /**
      * Gets a pagination factory
      *
-     * @return The pagination factory
+     * @return - The pagination factory
      */
     protected function paginationFactory() : PaginationFactory
     {

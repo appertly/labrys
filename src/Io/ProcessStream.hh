@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Io;
 
@@ -66,7 +66,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      *
      * After the stream has been detached, the stream is in an unusable state.
      *
-     * @return Underlying PHP stream, if any
+     * @return - Underlying PHP stream, if any
      */
     public function detach(): ?resource
     {
@@ -78,7 +78,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Returns true if the stream is at the end of the stream.
      *
-     * @return Whether the stream pointer is at the end
+     * @return - Whether the stream pointer is at the end
      */
     public function eof(): bool
     {
@@ -88,7 +88,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Returns the remaining contents in a string.
      *
-     * @return The stream contents
+     * @return - The stream contents
      * @throws \RuntimeException if unable to read or an error occurs while reading
      */
     public function getContents(): string
@@ -110,7 +110,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      * `stream_get_meta_data` function.
      *
      * @param $key - Specific metadata to retrieve.
-     * @return Returns an associative array if no key is provided. Returns a
+     * @return - Returns an associative array if no key is provided. Returns a
      *     specific key value if a key is provided and the value is found, or
      *     null if the key is not found.
      */
@@ -127,7 +127,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Get the size of the stream if known.
      *
-     * @return Returns the size in bytes if known, or null if unknown.
+     * @return - Returns the size in bytes if known, or null if unknown.
      */
     public function getSize(): ?int
     {
@@ -137,7 +137,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Returns whether or not the stream is readable.
      *
-     * @return Whether or not the stream is readable
+     * @return - Whether or not the stream is readable
      */
     public function isReadable(): bool
     {
@@ -147,7 +147,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Returns whether or not the stream is seekable.
      *
-     * @return Whether the stream is seekable
+     * @return - Whether the stream is seekable
      */
     public function isSeekable(): bool
     {
@@ -157,7 +157,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Returns whether or not the stream is writable.
      *
-     * @return Whether the stream is writable
+     * @return - Whether the stream is writable
      */
     public function isWritable(): bool
     {
@@ -170,7 +170,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      * @param $length - Read up to $length bytes from the object and return
      *     them. Fewer than $length bytes may be returned if underlying stream
      *     call returns fewer bytes.
-     * @return Returns the data read from the stream, or an empty string if no
+     * @return - Returns the data read from the stream, or an empty string if no
      *     bytes are available
      * @throws \RuntimeException if an error occurs
      */
@@ -224,7 +224,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
     /**
      * Returns the current position of the file read/write pointer
      *
-     * @return Position of the file pointer
+     * @return - Position of the file pointer
      * @throws \RuntimeException on error.
      */
     public function tell(): int
@@ -245,7 +245,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      * This stream is not writable, this method will raise an exception.
      *
      * @param $string - The string that is to be written
-     * @return Returns the number of bytes written to the stream.
+     * @return - Returns the number of bytes written to the stream.
      * @throws \RuntimeException on failure
      */
     public function write($string): int
@@ -265,7 +265,7 @@ class ProcessStream implements \Psr\Http\Message\StreamInterface
      * string casting operations.
      *
      * @see http://php.net/manual/en/language.oop5.magic.php#object.tostring
-     * @return string
+     * @return - string
      */
     public function __toString(): string
     {

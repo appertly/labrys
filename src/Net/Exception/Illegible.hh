@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Net\Exception;
 
@@ -39,7 +39,7 @@ class Illegible extends \InvalidArgumentException implements \Labrys\Net\Excepti
     /**
      * Gets the illegible argument
      *
-     * @return the illegible argument
+     * @return - the illegible argument
      */
     public function getArgument() : mixed
     {

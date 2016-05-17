@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Auth;
 
@@ -27,21 +27,21 @@ interface Owner<T>
     /**
      * Gets the entity ID.
      *
-     * @return The entity's ID
+     * @return - The entity's ID
      */
     public function getId(): T;
 
     /**
      * Gets the entity's display name.
      *
-     * @return The entity's display name
+     * @return - The entity's display name
      */
     public function getDisplayName(): string;
 
     /**
      * Gets the URL slug for this entity.
      *
-     * @return The URL slug
+     * @return - The URL slug
      */
     public function getSlug(): string;
 
@@ -54,21 +54,21 @@ interface Owner<T>
      *
      * Should default to system time zone if none is available.
      *
-     * @return The owner's time zone
+     * @return - The owner's time zone
      */
     public function getTimeZone(): \DateTimeZone;
 
     /**
      * Gets whether this group is disabled.
      *
-     * @return Whether the group is disabled
+     * @return - Whether the group is disabled
      */
     public function isDisabled(): bool;
 
     /**
      * Converts this entity to an array.
      *
-     * @return The array version
+     * @return - The array version
      */
     public function toArray(): array<string,mixed>;
 }

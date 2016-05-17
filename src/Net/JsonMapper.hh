@@ -15,7 +15,7 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 namespace Labrys\Net;
 
@@ -28,6 +28,7 @@ class JsonMapper
      * Converts a JSON string to a Vector.
      *
      * @param $json - The JSON to convert
+     * @return - The `Vector` version
      * @throws \Labrys\Net\Exception\Illegible if the JSON is invalid
      */
     public function toVector(?string $json) : Vector<mixed>
@@ -43,6 +44,7 @@ class JsonMapper
      * Converts a JSON string to a Map.
      *
      * @param $json - The JSON to convert
+     * @return - The `Map` version
      * @throws \Labrys\Net\Exception\Illegible if the JSON is invalid
      */
     public function toMap(?string $json) : Map<string,mixed>
