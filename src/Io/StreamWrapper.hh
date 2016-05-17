@@ -19,8 +19,6 @@
  */
 namespace Labrys\Io;
 
-use Psr\Http\Message\StreamInterface;
-
 /**
  * Allows PSR-7 streams to be used as PHP streams.
  *
@@ -67,10 +65,10 @@ class StreamWrapper
      * Gets a PHP stream resource for the provided PSR-7 stream.
      *
      * @param $stream - The stream to wrap
-     * @return The generated resource
+     * @return - The generated resource
      * @throws \InvalidArgumentException if stream is not readable or writable
      */
-    public static function getResource(StreamInterface $stream): resource
+    public static function getResource(\Psr\Http\Message\StreamInterface $stream): resource
     {
         self::register();
         if ($stream->isReadable()) {
@@ -139,7 +137,7 @@ class StreamWrapper
      *
      * Blatently lifted from https://github.com/aws/aws-sdk-php/blob/master/src/S3/StreamWrapper.php
      *
-     * @return The stat template.
+     * @return - The stat template.
      */
     private function getStatTemplate(): array<arraykey,int>
     {

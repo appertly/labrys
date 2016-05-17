@@ -34,7 +34,7 @@ class :ui:flash-messages extends :x:element implements HasXHPHelpers
         $container = <div class="flash-messages"/>;
         foreach ($this->:service->getFlashMessages() as $status => $messages) {
             $status = substr($status, 0, 4) === 'msg-' ? substr($status, 4) : 'info';
-            $hu = <ui:heads-up status={$status}/>;
+            $hu = <axe:heads-up status={$status}/>;
             foreach ($messages as $message) {
                 $hu->appendChild(<p>{$message}</p>);
             }
