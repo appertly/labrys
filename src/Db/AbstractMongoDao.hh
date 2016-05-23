@@ -145,7 +145,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Gets a single document by ID.
      *
-     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
+     * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
      * @return - The BSON document
      * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
@@ -158,7 +158,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Gets a single document by ID, throwing an exception if it's not found.
      *
-     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
+     * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
      * @return - The BSON document
      * @throws \Labrys\Db\Exception\Retrieval If the document doesn't exist
      * @throws \Labrys\Db\Exception\System If any other database problem occurs
@@ -232,7 +232,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Updates a record.
      *
-     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
+     * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
      * @param $record - The record to update, ready to go
      * @return - Whatever MongoDB returns
      * @throws \Caridea\Validate\Exception\Invalid if validation fails
@@ -285,7 +285,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Deletes a record.
      *
-     * @param \MongoDB\BSON\ObjectID|string $id - The document identifier, either a string or `ObjectID`
+     * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
      * @return - Whatever MongoDB returns
      * @throws \Labrys\Db\Exception\System If a database problem occurs
      */
