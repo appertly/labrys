@@ -17,7 +17,7 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
+namespace Labrys\Route;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -28,25 +28,18 @@ use Psr\Http\Message\ResponseInterface as Response;
 interface Plugin
 {
     /**
-     * Allows a plugin to configure the request before any route matching.
+     * Gets the plugin priority; larger means first.
      *
-     * Implementations can return the original request if no modifications need
-     * to take place.
-     *
-     * @param $request - The server request
-     * @return - The request
+     * @return - The plugin priority
      */
-    public function advise(Request $request): Request;
+    public function getPriority(): int;
 
     /**
-     * Allows a plugin to issue a response before the request is dispatched.
-     *
-     * Implementations must return the original response if no actions are
-     * performed.
+     * Middleware request–response handling.
      *
      * @param $request - The server request
      * @param $response - The response
      * @return - The response
      */
-    public function intercept(Request $request, Response $response) : Response;
+    public function __invoke(Request $request, Response $response, (function (Request,Response): Response) $next): Response;
 }

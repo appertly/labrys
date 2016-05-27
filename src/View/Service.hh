@@ -17,14 +17,14 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
+namespace Labrys\View;
 
 use Axe\Page;
 
 /**
  * Creates Views and broadcasts the render event.
  */
-class ViewService
+class Service
 {
     /**
      * @var The page

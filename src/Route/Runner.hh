@@ -17,48 +17,44 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
+namespace Labrys\Route;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
- * Authentication plugin for the front controller.
+ * Collects any Route plugins and runs them, returning the response.
  */
-class AuthPlugin implements Plugin
+class Runner
 {
     /**
-     * Creates a new AuthPlugin.
-     *
-     * @param $service - The auth service
+     * The nested Runner
      */
-    public function __construct(private \Caridea\Auth\Service $service)
+    private \Ducts\Runner $runner;
+
+    /**
+     * Creates a new Runner.
+     *
+     * @param $c - The container
+     */
+    public function __construct(\Caridea\Container\Container $c)
     {
+        $plugins = new Vector(array_values($c->getByType(Plugin::class)));
+        /* HH_IGNORE_ERROR[1002]: Hack typechecker doesn't like spaceship  */
+        usort($plugins, ($a, $b) ==> $b->getPriority() <=> $a->getPriority());
+        /* HH_IGNORE_ERROR[4110]: I'm sure this works */
+        $this->runner = new \Ducts\Runner($plugins);
     }
 
     /**
-     * Allows a plugin to configure the request before any route matching.
-     *
-     * Implementations can return the original request if no modifications need
-     * to take place.
-     *
-     * @param $request - The server request
-     * @return - The request
-     */
-    public function advise(Request $request): Request
-    {
-        return $request->withAttribute('principal', $this->service->getPrincipal());
-    }
-
-    /**
-     * Allows a plugin to issue a response before the request is dispatched.
+     * Middleware request–response handling.
      *
      * @param $request - The server request
      * @param $response - The response
      * @return - The response
      */
-    public function intercept(Request $request, Response $response) : Response
+    public function run(Request $request, Response $response): Response
     {
-        return $response;
+        return $this->runner->run($request, $response);
     }
 }

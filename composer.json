@@ -7,19 +7,21 @@
     "license": "Apache-2.0",
     "require": {
         "hhvm": ">=3.12.0",
+        "appertly/ducts": "~0.1",
         "caridea/acl": "^2.0.0",
         "caridea/auth": "^2.0.0",
         "caridea/container": "^2.0.0",
         "caridea/http": "^2.0.0",
         "caridea/validate": "^2.0.0",
-        "aura/router": "^3.0.0",
+        "aura/router": "^3.0",
         "appertly/axe": "~0.1"
     },
     "require-dev": {
         "hackpack/hackunit": "~0.6",
-        "hack-psr/psr7-http-message-hhi": "dev-master",
+        "hack-psr/psr7-http-message-hhi": "^0.2",
         "libreworks/psr3-log-hhi": "~1.0.0",
-        "mongodb/mongodb": "1.1.x-dev"
+        "mongodb/mongodb": "1.1.x-dev",
+        "zendframework/zend-diactoros": "^1.0"
     },
     "suggest": {
         "ext-mongodb": "Allows use of Labrys\\Db MongoDB classes",

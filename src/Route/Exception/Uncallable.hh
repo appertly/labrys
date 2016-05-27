@@ -17,32 +17,11 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
+namespace Labrys\Route\Exception;
 
 /**
- * Provides an XHP node of content.
+ * Exceptions for requests that have a valid mapping, but couldn't be invoked.
  */
-interface Block
+class Uncallable extends \BadMethodCallException implements \Labrys\Route\Exception
 {
-    /**
-     * Gets the region in which this block should appear.
-     *
-     * @return - The region
-     */
-    public function getRegion(): string;
-
-    /**
-     * Gets the display order of this block in its region.
-     *
-     * @return - The display order
-     */
-    public function getOrder(): int;
-
-    /**
-     * Compose the content.
-     *
-     * @param $request - The server request
-     * @return - The XHP node
-     */
-    public function compose(?\Psr\Http\Message\ServerRequestInterface $request = null) : Awaitable<\XHPRoot>;
 }

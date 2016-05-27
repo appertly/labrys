@@ -1,4 +1,4 @@
-<?hh
+<?hh // strict
 /**
  * Labrys
  *
@@ -17,32 +17,33 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
+namespace Labrys\Http;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Caridea\Http\ProblemDetails;
 
 /**
- * A pretty basic Contingency.
+ * A pretty basic contingency plan.
+ *
+ * Under normal circumstances, this class will simply return the response given
+ * by the `$next` function. In the event that an Exception occurred in the
+ * `$next` function, this class will craft a new response containing details
+ * about the error itself.
  */
-class SimpleContingency implements Contingency
+class Rescuer implements \Labrys\Route\Plugin
 {
     /**
-     * @var Whether to include exception information in responses
+     * Whether to include exception information in responses
      */
     protected bool $debug;
     /**
-     * @var The name of this site; used only in HTML responses
+     * The class name of the XHP to render
      */
-    protected string $site;
-    /**
-     * @var The URL for the standalone login form
-     */
-    protected string $authUrl;
+    protected string $xhpClass;
 
     /**
-     * @var Convenient map of HTTP status codes to human-readable explanations
+     * Convenient map of HTTP status codes to human-readable explanations
      */
     protected static ImmMap<int,string> $messages = ImmMap{
         403 => "You are not allowed to perform this action.",
@@ -55,20 +56,48 @@ class SimpleContingency implements Contingency
     };
 
     /**
-     * Creates a new SimpleContingency.
+     * Creates a new Contingency.
      *
      * The following options are available:
-     * * `options` – Whether to include exception stack trace information (should be false in production!). Defaults to false.
-     * * `site` – The name of this application (used in HTML responses)
-     * * `authUrl` – The URL for a standalone login form
+     * * `debug` – Whether to include exception stack trace information (*should be `false` in production!*). Defaults to `false`.
+     * * `xhpClass` – The class name of XHP to render (must be `xhp_class_name` format). Defaults to `xhp__labrys__error_page`.
      *
      * @param $options - The options
      */
     public function __construct(\ConstMap<string,mixed> $options = ImmMap{})
     {
         $this->debug = (bool)($options['debug'] ?? false);
-        $this->site = (string)($options['site'] ?? '');
-        $this->authUrl = (string)($options['authUrl'] ?? '');
+        $c = (string)($options['xhpClass'] ?? 'xhp_labrys__error_page');
+        if (!is_subclass_of($c, \XHPRoot::class)) {
+            throw new \InvalidArgumentException("Class given in xhpClass option '$c' does not implement XHPRoot");
+        }
+        $this->xhpClass = $c;
+    }
+
+    /**
+     * Gets the plugin priority; larger means first.
+     *
+     * @return - The plugin priority
+     */
+    public function getPriority(): int
+    {
+        return PHP_INT_MAX;
+    }
+
+    /**
+     * Middleware request–response handling.
+     *
+     * @param $request - The server request
+     * @param $response - The response
+     * @return - The response
+     */
+    public function __invoke(Request $request, Response $response, (function (Request,Response): Response) $next): Response
+    {
+        try {
+            return $next($request, $response);
+        } catch (\Exception $e) {
+            return $this->process($request, $response, $e);
+        }
     }
 
     /**
@@ -84,9 +113,7 @@ class SimpleContingency implements Contingency
      */
     public function process(Request $request, Response $response, \Exception $e) : Response
     {
-        $needLogin = false;
-        if ($e instanceof Exception\Unroutable) {
-            $needLogin = $e->getCode() === 403;
+        if ($e instanceof \Labrys\Route\Exception\Unroutable) {
             $response = $response->withStatus($e->getCode(), $e->getMessage());
             foreach ($e->getHeaders() as $k => $v) {
                 $response = $response->withHeader($k, $v);
@@ -107,35 +134,36 @@ class SimpleContingency implements Contingency
         }
         $values = $this->getValues($request, $e);
         $types = new \Caridea\Http\AcceptTypes($request->getServerParams());
-        switch ($types->preferred(['application/json', 'text/html'])) {
+        switch ($types->preferred(['application/json', ProblemDetails::MIME_TYPE_JSON, 'text/html'])) {
+            /* HH_IGNORE_ERROR[4110]: Not sure why hh_client has a problem with this */
+            case ProblemDetails::MIME_TYPE_JSON:
             /* HH_IGNORE_ERROR[4110]: Not sure why hh_client has a problem with this */
             case 'application/json':
                 $response = $response->withHeader('Content-Type', ProblemDetails::MIME_TYPE_JSON);
-                $response->getBody()->write((string)$this->renderJson($request, $e, $values));
+                $response->getBody()->write((string)$this->renderJson($values));
                 break;
             default:
-                if ($needLogin && strlen($this->authUrl) > 0) {
-                    $response = $response->withStatus(303)->withHeader(
-                        'Location', $this->authUrl . '?then=' . (string)$request->getRequestTarget()
-                    );
-                } else {
-                    $response = $response->withHeader('Content-Type', 'text/html');
-                    $response->getBody()->write((string)$this->renderHtml($request, $e, $values));
-                }
+                $response = $response->withHeader('Content-Type', 'text/html');
+                $response->getBody()->write((string)$this->renderHtml($values));
         }
         return $response;
     }
 
+    /**
+     * Assembles the values from the Request and Exception.
+     *
+     * @param $request - The request
+     * @param $e - The Exception
+     * @return - The assembled values
+     */
     protected function getValues(Request $request, \Exception $e) : Map<string,mixed>
     {
         $values = Map{};
         $extra = Map{'success' => false};
         if ($this->debug) {
-            $extra['exception'] = get_class($e);
-            $extra['stack'] = $e->getTraceAsString();
-            $extra['message'] = $e->getMessage();
+            $extra['exception'] = $this->getStackTrace($e);
         }
-        if ($e instanceof Exception\Unroutable) {
+        if ($e instanceof \Labrys\Route\Exception\Unroutable) {
             $code = $e->getCode();
             $values['title'] = $e->getMessage();
             $values['status'] = $code;
@@ -162,7 +190,7 @@ class SimpleContingency implements Contingency
             $values['detail'] = self::$messages[422];
             $errors = Vector{};
             foreach ($e->getErrors() as $field => $code) {
-                $errors[] = Map{'field' => $field, 'code' => $code};
+                $errors[] = ImmMap{'field' => $field, 'code' => $code};
             }
             $extra['errors'] = $errors;
         } elseif ($e instanceof \Labrys\Db\Exception\Locked) {
@@ -178,58 +206,53 @@ class SimpleContingency implements Contingency
         return $values;
     }
 
-    protected function renderJson(Request $request, \Exception $e, Map<string,mixed> $values) : ProblemDetails
+    /**
+     * Gets an exception stack trace as a string, including nested exceptions.
+     *
+     * @param $e - The exception
+     * @return - The full stack trace
+     */
+    private function getStackTrace(\Exception $e): Map<string,mixed>
     {
+        $details = Map{
+            'class' => get_class($e),
+            'message' => $e->getMessage(),
+            'stack' => $e->getTraceAsString()
+        };
+        if ($e->getPrevious() !== null) {
+            $details['previous'] = $this->getStackTrace($e->getPrevious());
+        }
+        return $details;
+    }
+
+    /**
+     * Returns the ProblemDetails to render.
+     *
+     * @param $values - The values
+     * @return - The JSON response
+     */
+    protected function renderJson(Map<string,mixed> $values) : ProblemDetails
+    {
+        $extra = $values['extra'] ?? ImmMap{};
         return new ProblemDetails(
             null,
             (string) $values['title'],
             (int) $values['status'],
             (string) $values['detail'],
             null,
-            (array) $values['extra']
+            $extra instanceof \ConstMap ? $extra->toArray() : []
         );
     }
 
-    protected function renderHtml(Request $request, \Exception $e, Map<string,mixed> $values) : \XHPRoot
+    /**
+     * Returns the XHP to render.
+     *
+     * @param $values - The values
+     * @return - The HTML response
+     */
+    protected function renderHtml(Map<string,mixed> $values) : \XHPRoot
     {
-        $frag = <x:frag/>;
-        $extra = $values['extra'];
-        if ($extra instanceof Map){
-            $errors = $extra->get('errors');
-            if ($errors instanceof Traversable) {
-                $ul = <ul/>;
-                foreach ($errors as $err) {
-                    $err = $err instanceof Map ? $err : ImmMap{};
-                    $ul->appendChild(<li>{$err['field'] ?? ''}: {$err['code'] ?? ''}</li>);
-                }
-                $frag->appendChild($ul);
-            }
-            if ($extra->containsKey('exception')) {
-                $frag->appendChild(<h2>{$extra['exception']}</h2>);
-            }
-            if ($extra->containsKey('message')) {
-                $frag->appendChild(<p>{$extra['message']}</p>);
-            }
-            if ($extra->containsKey('stack')) {
-                $frag->appendChild(<pre>{$extra['stack']}</pre>);
-            }
-        }
-        return <x:doctype>
-            <html lang="en">
-                <head>
-                    <meta charset="utf-8"/>
-                    <title>{$values['title']} | {$this->site}</title>
-                </head>
-                <body>
-                    <header>
-                        <h1>{$values['title']}</h1>
-                    </header>
-                    <main role="main">
-                        <p>{$values['detail']}</p>
-                        {$frag}
-                    </main>
-                </body>
-            </html>
-        </x:doctype>;
+        $c = new \ReflectionClass($this->xhpClass);
+        return $c->newInstance(Map{'values' => $values}, Vector{});
     }
 }

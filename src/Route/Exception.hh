@@ -17,24 +17,11 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
-
-use Psr\Http\Message\ResponseInterface;
+namespace Labrys\Route;
 
 /**
- * Emits PSR-7 response objects; allows us to swap PSR-7 implementations.
- *
- * For example, Zend Diactoros has an `EmitterInterface` to send responses and
- * Guzzle doesn't really have one out of the box.
+ * Tagging interface for Web-related exceptions.
  */
-interface Emitter
+interface Exception
 {
-    /**
-     * Emits a response (status line, headers, and message body).
-     *
-     * @param $response - The response to emit
-     * @throws \RuntimeException if the response could not be emitted (e.g., if
-     *         headers have already been sent)
-     */
-    public function emit(ResponseInterface $response): void;
 }

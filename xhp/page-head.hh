@@ -28,7 +28,7 @@ class :labrys:pagehead extends :x:element implements HasXHPHelpers
     category %flow, %heading;
     children empty;
     attribute :header,
-        Labrys\Web\ViewService service @required;
+        Labrys\View\Service service @required;
 
     protected function render(): XHPRoot
     {

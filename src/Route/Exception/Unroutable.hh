@@ -17,12 +17,12 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web\Exception;
+namespace Labrys\Route\Exception;
 
 /**
  * Exceptions for requests that cannot be routed to a controller method.
  */
-class Unroutable extends \RuntimeException implements \Labrys\Web\Exception
+class Unroutable extends \RuntimeException implements \Labrys\Route\Exception
 {
     /**
      * Creates a new Unroutable.
@@ -55,12 +55,12 @@ class Unroutable extends \RuntimeException implements \Labrys\Web\Exception
     public static function fromRoute(\Aura\Router\Route $failedRoute) : Unroutable
     {
         switch ($failedRoute->failedRule) {
-            case 'Aura\Router\Rule\Allows':
+            case Aura\Router\Rule\Allows::class:
                 $allows = ImmMap{'Allow' => implode(',', $failedRoute->allows)};
                 return new self("Method Not Allowed", 405, null, $allows);
-            case 'Aura\Router\Rule\Accepts':
+            case \Aura\Router\Rule\Accepts::class:
                 return new self("Not Acceptable", 406);
-            case 'Labrys\Web\AuthRule':
+            case \Labrys\Route\AuthRule::class:
                 return new self("You Must Be Authenticated", 403);
             default:
                 return new self("Not Found", 404);

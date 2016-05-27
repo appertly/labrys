@@ -27,7 +27,7 @@ class :labrys:flash-messages extends :x:element implements HasXHPHelpers
 
     category %flow;
     attribute :xhp:html-element,
-        Labrys\Web\ViewService service @required;
+        Labrys\View\Service service @required;
 
     protected function render(): XHPRoot
     {

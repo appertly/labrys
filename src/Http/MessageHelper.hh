@@ -17,7 +17,7 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
+namespace Labrys\Http;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -27,18 +27,30 @@ use Caridea\Http\PaginationFactory;
 /**
  * Controller trait with some handy methods.
  */
-trait Controller
+trait MessageHelper
 {
     /**
-     * Gets a Map of the request body content.
+     * Gets a `Map` of the request body content.
      *
      * @param $request - The request
      * @return - The Map of request body content
      */
-    protected function getParsedBodyMap(Request $request) : Map<string,mixed>
+    protected function getParsedBodyMap(Request $request): Map<string,mixed>
     {
         $body = $request->getParsedBody();
         return is_array($body) ? new Map($body) : Map{};
+    }
+
+    /**
+     * Gets a `Map` of the request query params.
+     *
+     * @param $request - The request
+     * @return - The Map of query params
+     */
+    protected function getQueryParamsMap(Request $request): Map<string,mixed>
+    {
+        $params = $request->getQueryParams();
+        return is_array($params) ? new Map($params) : Map{};
     }
 
     /**
@@ -48,24 +60,41 @@ trait Controller
      * @param $body - The body to write
      * @return - The same or new response
      */
-    protected function write(Response $response, mixed $body) : Response
+    protected function write(Response $response, mixed $body): Response
     {
         $response->getBody()->write((string) $body);
         return $response;
     }
 
     /**
-     * Checks the If-Modified-Since header, maybe sending 304 Not Modified.
+     * Checks the `If-Modified-Since` header, maybe sending 304 Not Modified.
      *
      * @param $request - The HTTP request
      * @param $response - The HTTP response
      * @param $timestamp - The timestamp for comparison
      * @return - The same or new response
      */
-    protected function ifModSince(Request $request, Response $response, int $timestamp) : Response
+    protected function ifModSince(Request $request, Response $response, int $timestamp): Response
     {
         $ifModSince = $request->getHeaderLine('If-Modified-Since');
         if ($ifModSince && $timestamp <= strtotime($ifModSince)) {
+            return $response->withStatus(304, "Not Modified");
+        }
+        return $response;
+    }
+
+    /**
+     * Checks the `If-None-Match` header, maybe sending 304 Not Modified.
+     *
+     * @param $request - The HTTP request
+     * @param $response - The HTTP response
+     * @param $etag - The ETag for comparison
+     * @return - The same or new response
+     */
+    protected function ifNoneMatch(Request $request, Response $response, string $etag): Response
+    {
+        $ifNoneMatch = $request->getHeaderLine('If-None-Match');
+        if ($ifNoneMatch && $etag === $ifNoneMatch) {
             return $response->withStatus(304, "Not Modified");
         }
         return $response;
@@ -77,7 +106,7 @@ trait Controller
      * @param $response - The HTTP response
      * @return - The new response
      */
-    protected function redirect(Response $response, int $code, string $url) : Response
+    protected function redirect(Response $response, int $code, string $url): Response
     {
         return $response->withStatus($code)->withHeader('Location', $url);
     }
@@ -88,7 +117,7 @@ trait Controller
      * @param $request - The HTTP request
      * @return - The authenticated principal
      */
-    protected function getPrincipal(Request $request) : Principal
+    protected function getPrincipal(Request $request): Principal
     {
         $principal = $request->getAttribute('principal', Principal::getAnonymous());
         invariant($principal instanceof Principal, "Type mismatch: principal");
@@ -100,7 +129,7 @@ trait Controller
      *
      * @return - The pagination factory
      */
-    protected function paginationFactory() : PaginationFactory
+    protected function paginationFactory(): PaginationFactory
     {
         return new PaginationFactory();
     }

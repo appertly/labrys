@@ -28,7 +28,7 @@ class :labrys:pagefoot extends :x:element implements HasXHPHelpers
     category %flow;
     children empty;
     attribute :footer,
-        Labrys\Web\ViewService service @required;
+        Labrys\View\Service service @required;
 
     protected function render(): XHPRoot
     {

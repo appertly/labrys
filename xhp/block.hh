@@ -28,7 +28,7 @@ class :labrys:block extends :x:element implements HasXHPHelpers
     category %flow;
     children empty;
     attribute :xhp:html-element,
-        Labrys\Web\Block block @required,
+        Labrys\View\Block block @required,
         ?Psr\Http\Message\ServerRequestInterface request = null;
 
     protected async function asyncRender(): Awaitable<XHPRoot>

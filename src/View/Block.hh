@@ -17,26 +17,32 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Web;
-
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+namespace Labrys\View;
 
 /**
- * Handles errors that arise from the front controller.
+ * Provides an XHP node of content.
  */
-interface Contingency
+interface Block
 {
     /**
-     * Handles an exception.
+     * Gets the region in which this block should appear.
      *
-     * This is your chance for logging, changing the HTTP status header, and
-     * rendering some kind of message for the client.
-     *
-     * @param $request - The request
-     * @param $response - The response
-     * @param $e - The exception to process
-     * @return - The new response
+     * @return - The region
      */
-    public function process(ServerRequestInterface $request, ResponseInterface $response, \Exception $e): ResponseInterface;
+    public function getRegion(): string;
+
+    /**
+     * Gets the display order of this block in its region.
+     *
+     * @return - The display order
+     */
+    public function getOrder(): int;
+
+    /**
+     * Compose the content.
+     *
+     * @param $request - The server request
+     * @return - The XHP node
+     */
+    public function compose(?\Psr\Http\Message\ServerRequestInterface $request = null) : Awaitable<\XHPRoot>;
 }
