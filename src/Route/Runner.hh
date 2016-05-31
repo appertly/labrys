@@ -39,7 +39,7 @@ class Runner
      */
     public function __construct(\Caridea\Container\Container $c)
     {
-        $plugins = new Vector(array_values($c->getByType(Plugin::class)));
+        $plugins = new Vector($c->getByType(Plugin::class));
         /* HH_IGNORE_ERROR[1002]: Hack typechecker doesn't like spaceship  */
         usort($plugins, ($a, $b) ==> $b->getPriority() <=> $a->getPriority());
         /* HH_IGNORE_ERROR[4110]: I'm sure this works */

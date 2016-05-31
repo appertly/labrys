@@ -49,8 +49,7 @@ trait MessageHelper
      */
     protected function getQueryParamsMap(Request $request): Map<string,mixed>
     {
-        $params = $request->getQueryParams();
-        return is_array($params) ? new Map($params) : Map{};
+        return new Map($request->getQueryParams());
     }
 
     /**

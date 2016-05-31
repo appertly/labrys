@@ -252,7 +252,8 @@ class Rescuer implements \Labrys\Route\Plugin
      */
     protected function renderHtml(Map<string,mixed> $values) : \XHPRoot
     {
-        $c = new \ReflectionClass($this->xhpClass);
-        return $c->newInstance(Map{'values' => $values}, Vector{});
+        $c = $this->xhpClass;
+        /* HH_IGNORE_ERROR[4026]: This definitely works */
+        return new $c(Map{'values' => $values}, Vector{});
     }
 }
