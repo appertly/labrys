@@ -33,9 +33,13 @@ use Psr\Log\NullLogger;
 
 class DispatcherTest
 {
+    public function __construct(private string $header = 'foobar')
+    {
+    }
+
     public function __invoke(Request $request, Response $response): Response
     {
-        return $response->withHeader('X-Unit-Test', 'foobar');
+        return $response->withHeader('X-Unit-Test', $this->header);
     }
 
     <<Test>>
@@ -93,7 +97,7 @@ class DispatcherTest
 
         $builder = new Builder();
         $builder->lazy('dispatcherController', self::class, function ($c) {
-            return new DispatcherTest();
+            return new DispatcherTest('herpderp');
         });
         $container = $builder->build(null);
 
@@ -104,7 +108,7 @@ class DispatcherTest
         $response = new \Zend\Diactoros\Response();
 
         $res = $object->__invoke($request, $response, ($req, $res) ==> $res);
-        $assert->string($res->getHeaderLine('X-Unit-Test'))->is('foobar');
+        $assert->string($res->getHeaderLine('X-Unit-Test'))->is('herpderp');
     }
 
     <<Test>>
@@ -214,6 +218,31 @@ class DispatcherTest
 
     <<Test>>
     public async function testContainer6(Assert $assert): Awaitable<void>
+    {
+        $routeRules = new RuleIterator([new Path(), new Allows(), new Accepts()]);
+        $map = new \Aura\Router\Map(new Route());
+        $map->get('only.get', '/foo/bar', [self::class, '__invoke']);
+        $matcher = new Matcher($map, new NullLogger(), $routeRules);
+
+        $builder = new Builder();
+        $container = $builder->build(null);
+
+        $object = new Dispatcher($matcher, $container);
+
+        $uri = new \Zend\Diactoros\Uri('https://example.com/foo/bar');
+        $request = new \Zend\Diactoros\ServerRequest([], [], $uri, 'GET');
+        $response = new \Zend\Diactoros\Response();
+
+        $assert->whenCalled(function () use ($object, $request, $response) {
+            $object->__invoke($request, $response, ($req, $res) ==> $res);
+        })->willThrowClassWithMessage(
+            Exception\Uncallable::class,
+            "Controller instance not found: '" . __CLASS__ . "'"
+        );
+    }
+
+    <<Test>>
+    public async function testContainer7(Assert $assert): Awaitable<void>
     {
         $routeRules = new RuleIterator([new Path(), new Allows(), new Accepts()]);
         $map = new \Aura\Router\Map(new Route());

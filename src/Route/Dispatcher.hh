@@ -26,6 +26,13 @@ use Caridea\Container\Container as CContainer;
 
 /**
  * The final, innermost layer of the request–response dispatch queue.
+ *
+ * This class supports the following handlers on `Aura\Router\Route` objects:
+ *
+ * - Anonymous functions (closures and lambdas)
+ * - An array containing a class name and a function name; this object will be
+ *   retrieved from the container.
+ * - A string; the object with this name in the container will be invoked.
  */
 class Dispatcher implements Plugin
 {
@@ -40,7 +47,7 @@ class Dispatcher implements Plugin
     }
 
     /**
-     * Allows a plugin to configure the request before any route matching.
+     * Gets the plugin priority; larger means first.
      *
      * @return - The plugin priority
      */
@@ -71,7 +78,7 @@ class Dispatcher implements Plugin
         }
         $request = $request->withAttribute('_route', $route);
         $handler = $route->handler;
-        if (is_callable($handler)) {
+        if ($handler instanceof \Closure) {
             $response = $handler($request, $response);
         } elseif (is_array($handler) && count($handler) == 2) {
             list($className, $methodName) = $handler;
