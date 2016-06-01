@@ -151,8 +151,16 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
      */
     public function findById(mixed $id) : ?T
     {
+        try {
+            $mid = $this->toId($id);
+        } catch (\MongoDB\Driver\Exception\InvalidArgumentException $e) {
+            if ($e->getMessage() === 'Invalid BSON ID provided') {
+                throw new \Labrys\Db\Exception\Retrieval('Could not find document', 0, $e);
+            }
+            throw $e;
+        }
         return $this->getFromCache((string)$id) ??
-            $this->findOne(ImmMap{'_id' => $this->toId($id)});
+            $this->findOne(ImmMap{'_id' => $mid});
     }
 
     /**

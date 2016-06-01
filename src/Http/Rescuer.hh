@@ -119,7 +119,11 @@ class Rescuer implements \Labrys\Route\Plugin
                 $response = $response->withHeader($k, $v);
             }
         } elseif ($e instanceof \Caridea\Acl\Exception\Forbidden) {
-            $response = $response->withStatus(403, 'Forbidden');
+            if ($e->getPrevious() !== null && $e->getPrevious() instanceof \Labrys\Db\Exception\Retrieval) {
+                $response = $response->withStatus(404, 'Not Found');
+            } else {
+                $response = $response->withStatus(403, 'Forbidden');
+            }
         } elseif ($e instanceof \Labrys\Db\Exception\Retrieval) {
             $response = $response->withStatus(404, 'Not Found');
         } elseif ($e instanceof \Labrys\Db\Exception\Concurrency ||
@@ -169,9 +173,15 @@ class Rescuer implements \Labrys\Route\Plugin
             $values['status'] = $code;
             $values['detail'] = self::$messages[$code];
         } elseif ($e instanceof \Caridea\Acl\Exception\Forbidden) {
-            $values['title'] = 'Access Denied';
-            $values['status'] = 403;
-            $values['detail'] = self::$messages[403];
+            if ($e->getPrevious() !== null && $e->getPrevious() instanceof \Labrys\Db\Exception\Retrieval) {
+                $values['title'] = 'Resource Not Found';
+                $values['status'] = 404;
+                $values['detail'] = self::$messages[404];
+            } else {
+                $values['title'] = 'Access Denied';
+                $values['status'] = 403;
+                $values['detail'] = self::$messages[403];
+            }
         } elseif ($e instanceof \Labrys\Db\Exception\Retrieval) {
             $values['title'] = 'Resource Not Found';
             $values['status'] = 404;
