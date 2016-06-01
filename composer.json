@@ -7,6 +7,8 @@
     "license": "Apache-2.0",
     "require": {
         "hhvm": ">=3.12.0",
+        "psr/http-message": "^1.0",
+        "psr/log": "^1.0",
         "appertly/ducts": "~0.1",
         "caridea/acl": "^2.0.0",
         "caridea/auth": "^2.0.0",
@@ -20,6 +22,7 @@
         "hackpack/hackunit": "~0.6",
         "hack-psr/psr7-http-message-hhi": "^0.2",
         "libreworks/psr3-log-hhi": "~1.0.0",
+        "libreworks/ext-mongodb-hhi": "^1.1.0",
         "mongodb/mongodb": "1.1.x-dev",
         "zendframework/zend-diactoros": "^1.0"
     },
