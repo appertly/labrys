@@ -20,6 +20,10 @@
 
 /**
  * FontAwesome icon
+ *
+ * ```xml
+ * <labrys:icon icon="group" />
+ * ```
  */
 class :labrys:icon extends :x:element implements HasXHPHelpers
 {

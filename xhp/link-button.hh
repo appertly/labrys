@@ -20,6 +20,12 @@
 
 /**
  * A link styled as a button.
+ *
+ * ```xml
+ * <labrys:link-button href="http://example.com" icon="group">
+ *     Hello World
+ * </labrys:link-button>
+ * ```
  */
 class :labrys:link-button extends :x:element implements HasXHPHelpers
 {

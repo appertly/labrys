@@ -15,11 +15,18 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
  * A region for several blocks.
+ *
+ * ```xml
+ * <labrys:block-region>
+ *     <labrys:block />
+ *     <labrys:block />
+ * </labrys:block-region>
+ * ```
  */
 class :labrys:block-region extends :x:element implements HasXHPHelpers
 {

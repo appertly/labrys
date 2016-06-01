@@ -17,9 +17,14 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
  * A block of content.
+ *
+ * ```hack
+ * <labrys:block block={$block} request={$request} />
+ * ```
  */
 class :labrys:block extends :x:element implements HasXHPHelpers
 {
@@ -28,13 +33,13 @@ class :labrys:block extends :x:element implements HasXHPHelpers
     category %flow;
     children empty;
     attribute :xhp:html-element,
-        Labrys\View\Block block @required,
-        ?Psr\Http\Message\ServerRequestInterface request = null;
+        Labrys\View\Block block @required;
 
     protected async function asyncRender(): Awaitable<XHPRoot>
     {
         $block = $this->:block;
-        $kid = await $block->compose($this->:request);
+        $request = $this->getContext('request');
+        $kid = await $block->compose($request instanceof Request ? $request : null);
         return <div class={"block {$block->getRegion()}-block"}>
             {$kid}
         </div>;

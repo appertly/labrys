@@ -20,6 +20,12 @@
 
 /**
  * A textarea that should have golden ratio width to height.
+ *
+ * ```xml
+ * <labrys:golden-textarea name="foobar" id="foobar">
+ *     Lorem ipsum dolor sit amet
+ * </labrys:golden-textarea>
+ * ```
  */
 class :labrys:golden-textarea extends :x:element implements HasXHPHelpers
 {

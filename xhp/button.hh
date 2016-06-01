@@ -15,11 +15,17 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
  * A Button with an icon and a label.
+ *
+ * ```xml
+ * <labrys:button name="foo" id="foo" icon="group">
+ *     Hello World
+ * </labrys:button>
+ * ```
  */
 class :labrys:button extends :x:element implements HasXHPHelpers
 {

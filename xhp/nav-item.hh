@@ -15,11 +15,17 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
- * An item to appear in a navigation list
+ * An item to appear in a navigation list.
+ *
+ * ```xml
+ * <labrys:nav-item href="http://example.com" icon="group">
+ *     <em>Hello.</em>
+ * </labrys:nav-item>
+ * ```
  */
 class :labrys:nav-item extends :x:element implements HasXHPHelpers
 {

@@ -15,17 +15,22 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
  * Flash messages using the `axe:heads-up` tag.
+ *
+ * ```hack
+ * <labrys:flash-messages service={$service} />
+ * ```
  */
 class :labrys:flash-messages extends :x:element implements HasXHPHelpers
 {
     use XHPHelpers;
 
     category %flow;
+    children empty;
     attribute :xhp:html-element,
         Labrys\View\Service service @required;
 

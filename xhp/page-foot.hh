@@ -15,11 +15,15 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
  * Page Footer
+ *
+ * ```hack
+ * <labrys:pagefoot service={$service} />
+ * ```
  */
 class :labrys:pagefoot extends :x:element implements HasXHPHelpers
 {

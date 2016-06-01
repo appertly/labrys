@@ -15,11 +15,17 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
  * A box that might appear in a sidebar.
+ *
+ * ```xml
+ * <labrys:side-box label="Hello World">
+ *     <p>Anything</p>
+ * </labrys:side-box>
+ * ```
  */
 class :labrys:side-box extends :x:element implements HasXHPHelpers
 {

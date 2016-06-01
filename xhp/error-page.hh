@@ -26,6 +26,30 @@
  * be a `KeyedTraversable` which can contain `exception`, 'message', 'stack',
  * and `errors` (which is a `Traversable` that should contain `ConstMap` values
  * that have a `field` and `code`).
+ *
+ * ```hack
+ * $values = Map{
+ *     'title' => 'Foo',
+ *     'detail' => 'Bar',
+ *     'extra' => [
+ *         'errors' => [
+ *             Map{'field' => 'foobar', 'code' => 'REQUIRED'},
+ *             Map{'field' => 'example', 'code' => 'REQUIRED'}
+ *         ],
+ *         'exception' => [
+ *             'class' => 'RuntimeException',
+ *             'message' => 'Hello World',
+ *             'stack' => '…',
+ *             'previous' => [
+ *                 'class' => 'RuntimeException',
+ *                 'message' => 'Hello World',
+ *                 'stack' => '…'
+ *             ]
+ *         ]
+ *     ]
+ * };
+ * return <labrys:error-page values={$values} />;
+ * ```
  */
 class :labrys:error-page extends :x:element
 {

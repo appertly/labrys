@@ -15,11 +15,18 @@
  * the License.
  *
  * @copyright 2015-2016 Appertly
- * @license   http://opensource.org/licenses/Apache-2.0 Apache 2.0 License
+ * @license   Apache-2.0
  */
 
 /**
  * Side navigation.
+ *
+ * ```xml
+ * <labrys:side-nav>
+ *     <labrys:nav-item />
+ *     <labrys:nav-item />
+ * </labrys:side-nav>
+ * ```
  */
 class :labrys:side-nav extends :x:element implements HasXHPHelpers
 {
