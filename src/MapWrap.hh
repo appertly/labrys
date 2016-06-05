@@ -32,7 +32,7 @@ class MapWrap<Tk,Tv>
      *
      * @param $map - The Map to wrap
      */
-    public function __construct(KeyedContainer<Tk,Tv> $map)
+    public function __construct(?KeyedTraversable<Tk,Tv> $map)
     {
         $this->map = $map instanceof \ConstMap ? $map : new Map($map);
     }

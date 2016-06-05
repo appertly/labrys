@@ -32,19 +32,19 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     use MongoHelper;
 
     /**
-     * @var Whether to enforce optimistic locking
+     * Whether to enforce optimistic locking
      */
     private bool $versioned = true;
     /**
-     * @var Whether entities will be put in the first-level cache
+     * Whether entities will be put in the first-level cache
      */
     private bool $caching = true;
     /**
-     * @var The MongoDB type map when reading records
+     * The MongoDB type map when reading records
      */
     private array<string,?string> $typeMap = ['root' => null, 'document' => null];
     /**
-     * @var First-level cache
+     * First-level cache
      */
     private Map<string,T> $cache = Map{};
 
@@ -238,6 +238,29 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     }
 
     /**
+     * Creates a record using a MongoDB `Persistable`.
+     *
+     * @param $record - The document to insert, ready to go
+     * @return - Whatever MongoDB returns
+     * @throws \Caridea\Validate\Exception\Invalid if validation fails
+     * @throws \Labrys\Db\Exception\Integrity If a unique constraint is violated
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @since 0.3.0
+     */
+    protected function doPersist(\MongoDB\BSON\Persistable $record): WriteResult
+    {
+        // check validation
+        if ($this->validator) {
+            $this->validator->assert($record->bsonSerialize());
+        }
+        return $this->doExecute(function (Manager $m, string $c) use ($record) {
+            $bulk = new \MongoDB\Driver\BulkWrite();
+            $bulk->insert($record);
+            return $m->executeBulkWrite($c, $bulk);
+        });
+    }
+
+    /**
      * Updates a record.
      *
      * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
@@ -377,8 +400,13 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
         } elseif ($a instanceof \ConstMap) {
             return $a->get('_id');
         } elseif (is_object($a)) {
-            /* HH_IGNORE_ERROR[4062]: This is fine */
-            return $a->id;
+            if (method_exists($a, 'getId')) {
+                /* HH_IGNORE_ERROR[4062]: We checked */
+                return $a->getId();
+            } elseif (property_exists($a, 'id')) {
+                /* HH_IGNORE_ERROR[4062]: We checked */
+                return $a->id;
+            }
         }
         return null;
     }
