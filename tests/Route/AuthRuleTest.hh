@@ -23,7 +23,7 @@ use HackPack\HackUnit\Contract\Assert;
 use Aura\Router\Route;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class RunnerTest
+class AuthRuleTest
 {
     <<Test>>
     public async function testBasic(Assert $assert): Awaitable<void>

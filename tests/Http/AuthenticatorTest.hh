@@ -26,7 +26,7 @@ class AuthenticatorTest
     <<Test>>
     public async function testRun1(Assert $assert): Awaitable<void>
     {
-        $session = new AuthenticatorFakeSession();
+        $session = new AuthenticatorTest_FakeSession();
         $service = new \Caridea\Auth\Service($session);
         $object = new Authenticator($service, '/auth/login');
         $next = function ($req, $res) use ($assert) {
@@ -42,7 +42,7 @@ class AuthenticatorTest
     <<Test>>
     public async function testRun2(Assert $assert): Awaitable<void>
     {
-        $session = new AuthenticatorFakeSession();
+        $session = new AuthenticatorTest_FakeSession();
         $service = new \Caridea\Auth\Service($session);
         $object = new Authenticator($service, '/auth/login');
         $next = function ($req, $res) use ($assert) {
@@ -57,7 +57,7 @@ class AuthenticatorTest
     }
 }
 
-class AuthenticatorFakeSession implements \Caridea\Session\Session
+class AuthenticatorTest_FakeSession implements \Caridea\Session\Session
 {
     public function canResume(): bool
     {

@@ -1,4 +1,4 @@
-<?hh
+<?hh // decl
 /**
  * Labrys
  *
@@ -44,7 +44,7 @@ class JobTest
         };
         $resolver = new class($subject) implements SubjectResolver {
             public function __construct(private \Caridea\Acl\Subject $subject) {}
-            public function getSubjects(\Caridea\Auth\Principal $principal) : Traversable<\Caridea\Acl\Subject>
+            public function getSubjects(\Caridea\Auth\Principal $principal): Traversable
             {
                 return Vector{$this->subject};
             }
@@ -71,7 +71,7 @@ class JobTest
         };
         $resolver = new class($subject) implements SubjectResolver {
             public function __construct(private \Caridea\Acl\Subject $subject) {}
-            public function getSubjects(\Caridea\Auth\Principal $principal) : Traversable<\Caridea\Acl\Subject>
+            public function getSubjects(\Caridea\Auth\Principal $principal): Traversable
             {
                 return Vector{$this->subject};
             }
