@@ -290,7 +290,8 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
         // check optimistic locking
         if ($this->versioned) {
             if (array_key_exists('version', $record)) {
-                if (is_array($orig) && $orig['version'] > $record['version']) {
+                $origVersion = $this->getVersion($orig);
+                if ($origVersion > $record['version']) {
                     throw new Exception\Concurrency("Document version conflict");
                 }
                 unset($record['version']);
@@ -301,7 +302,11 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
 
         // check validation
         if ($this->validator) {
-            $this->validator->assert(array_merge($orig, $record));
+            if ($orig instanceof KeyedContainer) {
+                $this->validator->assert(array_merge($orig, $record));
+            } elseif ($orig instanceof \MongoDB\BSON\Persistable) {
+                $this->validator->assert(array_merge($orig->bsonSerialize(), $record));
+            }
         }
 
         // do update operation
@@ -393,22 +398,43 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     /**
      * Extracts the ID from a thing
      */
-    private function getId(mixed $a) : mixed
+    private function getId(mixed $a): mixed
     {
         if (is_array($a)) {
             return $a['_id'];
         } elseif ($a instanceof \ConstMap) {
             return $a->get('_id');
         } elseif (is_object($a)) {
-            if (method_exists($a, 'getId')) {
+            if (method_exists($a, 'getId') || method_exists($a, '__call')) {
                 /* HH_IGNORE_ERROR[4062]: We checked */
                 return $a->getId();
-            } elseif (property_exists($a, 'id')) {
+            } elseif (property_exists($a, 'id') || method_exists($a, '__get')) {
                 /* HH_IGNORE_ERROR[4062]: We checked */
                 return $a->id;
             }
         }
         return null;
+    }
+
+    /**
+     * Extracts the version from a thing
+     */
+    private function getVersion(mixed $a): int
+    {
+        if (is_array($a)) {
+            return (int)($a['version'] ?? 0);
+        } elseif ($a instanceof \ConstMap) {
+            return (int)$a->get('version');
+        } elseif (is_object($a)) {
+            if (method_exists($a, 'getVersion') || method_exists($a, '__call')) {
+                /* HH_IGNORE_ERROR[4062]: We checked */
+                return (int)$a->getId();
+            } elseif (property_exists($a, 'version') || method_exists($a, '__get')) {
+                /* HH_IGNORE_ERROR[4062]: We checked */
+                return (int)$a->id;
+            }
+        }
+        return 0;
     }
 
     /**
