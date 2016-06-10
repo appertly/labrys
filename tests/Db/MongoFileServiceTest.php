@@ -106,18 +106,12 @@ class MongoFileServiceTest
 
         $mockGridFS = new class($mockGridFSFile) extends \MongoDB\GridFS\Bucket {
             public function __construct(private mixed $file) {}
-            public function getCollectionsWrapper()
+            public function getCollectionWrapper()
             {
                 return new class($this->file) {
                     public function __construct(private mixed $file) {}
-                    public function getFilesCollection() {
-                        return new class($this->file) {
-                            public function __construct(private mixed $file) {}
-                            public function findOne(mixed $id)
-                            {
-                                return $this->file;
-                            }
-                        };
+                    public function findFileById($id) {
+                        return $this->file;
                     }
                 };
             }

@@ -70,7 +70,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
     {
         $file = $this->read($id);
         return new MongoDownloadStream(
-            new \MongoDB\GridFS\GridFSDownload($this->bucket->getCollectionsWrapper(), $file)
+            new \MongoDB\GridFS\ReadableStream($this->bucket->getCollectionWrapper(), $file)
         );
     }
 
@@ -109,10 +109,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
     {
         $mid = $this->toId($id);
         return $this->doExecute(function (Bucket $bucket) use ($mid) {
-            return $bucket->getCollectionsWrapper()->getFilesCollection()->findOne(
-                ['_id' => $mid],
-                ['typeMap' => ['root' => 'stdClass']]
-            );
+            return $bucket->getCollectionWrapper()->findFileById($mid);
         });
     }
 
