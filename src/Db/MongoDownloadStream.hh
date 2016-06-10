@@ -31,7 +31,7 @@ class MongoDownloadStream implements StreamInterface
      *
      * @param $download - The download object
      */
-    public function __construct(private \MongoDB\GridFS\GridFSDownload $download)
+    public function __construct(private \MongoDB\GridFS\ReadableStream $download)
     {
     }
 
@@ -85,7 +85,7 @@ class MongoDownloadStream implements StreamInterface
             return $this->download->getSize();
         } else {
             // TODO kind of a messy implementation
-            $reflectionProperty = new \ReflectionProperty(\MongoDB\GridFS\GridFSDownload::class, 'bytesSeen');
+            $reflectionProperty = new \ReflectionProperty(\MongoDB\GridFS\ReadableStream::class, 'bytesSeen');
             $reflectionProperty->setAccessible(true);
             return $reflectionProperty->getValue($this->download);
         }
