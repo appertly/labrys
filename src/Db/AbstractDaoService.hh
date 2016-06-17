@@ -19,6 +19,8 @@
  */
 namespace Labrys\Db;
 
+use Labrys\Getter;
+
 /**
  * Abstract DAO-backed Service
  */
@@ -115,8 +117,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
         $all = $dao->getAll($ids);
         $type = $dao->getType();
         foreach ($all as $v) {
-            /* HH_FIXME[4005]: This should be a little more fault tolerant */
-            $this->gatekeeper->assert('read', $type, $v['_id']);
+            $this->gatekeeper->assert('read', $type, (string) Getter::getId($v));
         }
         return $all;
     }

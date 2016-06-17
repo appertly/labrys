@@ -23,6 +23,7 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\WriteResult;
+use Labrys\Getter;
 
 /**
  * Abstract MongoDB DAO Service
@@ -204,7 +205,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     {
         $instances = Map{};
         foreach ($entities as $entity) {
-            $instances[(string)$this->getId($entity)] = $entity;
+            $instances[(string)Getter::getId($entity)] = $entity;
         }
         return $instances->toImmMap();
     }
@@ -290,7 +291,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
         // check optimistic locking
         if ($this->versioned) {
             if (array_key_exists('version', $record)) {
-                $origVersion = $this->getVersion($orig);
+                $origVersion = (int)Getter::get($orig, 'version');
                 if ($origVersion > $record['version']) {
                     throw new Exception\Concurrency("Document version conflict");
                 }
@@ -363,7 +364,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
     protected function maybeCache(?T $entity) : ?T
     {
         if ($this->caching && $entity !== null) {
-            $id = (string)$this->getId($entity);
+            $id = (string)Getter::getId($entity);
             if (!$this->cache->containsKey($id)) {
                 $this->cache[$id] = $entity;
             }
@@ -383,7 +384,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
             $results = $entities->toArray();
             foreach ($results as $entity) {
                  if ($entity !== null) {
-                    $id = (string)$this->getId($entity);
+                    $id = (string)Getter::getId($entity);
                     if (!$this->cache->containsKey($id)) {
                         $this->cache[$id] = $entity;
                     }
@@ -393,48 +394,6 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
         } else {
             return $entities;
         }
-    }
-
-    /**
-     * Extracts the ID from a thing
-     */
-    private function getId(mixed $a): mixed
-    {
-        if (is_array($a)) {
-            return $a['_id'];
-        } elseif ($a instanceof \ConstMap) {
-            return $a->get('_id');
-        } elseif (is_object($a)) {
-            if (method_exists($a, 'getId') || method_exists($a, '__call')) {
-                /* HH_IGNORE_ERROR[4062]: We checked */
-                return $a->getId();
-            } elseif (property_exists($a, 'id') || method_exists($a, '__get')) {
-                /* HH_IGNORE_ERROR[4062]: We checked */
-                return $a->id;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Extracts the version from a thing
-     */
-    private function getVersion(mixed $a): int
-    {
-        if (is_array($a)) {
-            return (int)($a['version'] ?? 0);
-        } elseif ($a instanceof \ConstMap) {
-            return (int)$a->get('version');
-        } elseif (is_object($a)) {
-            if (method_exists($a, 'getVersion') || method_exists($a, '__call')) {
-                /* HH_IGNORE_ERROR[4062]: We checked */
-                return (int)$a->getId();
-            } elseif (property_exists($a, 'version') || method_exists($a, '__get')) {
-                /* HH_IGNORE_ERROR[4062]: We checked */
-                return (int)$a->id;
-            }
-        }
-        return 0;
     }
 
     /**
