@@ -37,15 +37,18 @@ class Getter
         if ($object instanceof KeyedContainer) {
             return $object['_id'] ?? null;
         } elseif (is_object($object)) {
-            if (property_exists($object, '_id') || method_exists($object, '__get')) {
-                /* HH_IGNORE_ERROR[4062]: We checked */
-                return $object->_id;
-            } elseif (property_exists($object, 'id') || method_exists($object, '__get')) {
-                /* HH_IGNORE_ERROR[4062]: We checked */
-                return $object->id;
+            $values = get_object_vars($object);
+            invariant($values !== null, 'The values array is null');
+            if (array_key_exists('_id', $values)) {
+                return $values['_id'];
+            } elseif (array_key_exists('id', $values)) {
+                return $values['id'];
             } elseif (method_exists($object, 'getId') || method_exists($object, '__call')) {
                 /* HH_IGNORE_ERROR[4062]: We checked */
                 return $object->getId();
+            } elseif (method_exists($object, '__get')) {
+                /* HH_IGNORE_ERROR[4062]: We checked */
+                return $object->id;
             }
         }
         return null;
@@ -62,11 +65,15 @@ class Getter
         if ($object instanceof KeyedContainer) {
             return $object[$field] ?? null;
         } elseif (is_object($object)) {
-            if (property_exists($object, $field) || method_exists($object, '__get')) {
-                /* HH_IGNORE_ERROR[1002]: Type checker can't parse this */
-                return $object->{$field};
+            $values = get_object_vars($object);
+            invariant($values !== null, 'The values array is null');
+            if (array_key_exists($field, $values)) {
+                return $values[$field];
             } elseif (method_exists($object, 'get' . ucfirst($field)) || method_exists($object, '__call')) {
                 return call_user_func([$object, 'get' . ucfirst($field)]);
+            } elseif (method_exists($object, '__get')) {
+                /* HH_IGNORE_ERROR[4062]: We checked */
+                return $object->id;
             }
         }
         return null;
