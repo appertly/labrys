@@ -299,7 +299,9 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
             }
             $ops['$inc'] = ['version' => 1];
         }
-        $ops['$set'] = $record;
+        if (count($record) > 0) {
+            $ops['$set'] = $record;
+        }
 
         // check validation
         if ($this->validator) {
