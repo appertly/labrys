@@ -223,7 +223,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
      */
     public function isResolvable(string $ref): bool
     {
-        return $this->collection === $ref;
+        return strstr($this->collection, '.') === ".$ref";
     }
 
     /**
