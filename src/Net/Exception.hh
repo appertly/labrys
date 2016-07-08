@@ -24,4 +24,5 @@ namespace Labrys\Net;
  */
 interface Exception
 {
+    require extends \Exception;
 }

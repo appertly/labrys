@@ -24,4 +24,5 @@ namespace Labrys\Db;
  */
 interface Exception
 {
+    require extends \Exception;
 }

@@ -27,13 +27,26 @@ trait MongoHelper
     /**
      * Transforms a literal into a MongoDB ObjectId.
      *
-     * @param mixed $id If it's an `ObjectID`, returns that, otherwise creates a
-     *        new `ObjectID`.
+     * @param $id - If it's an `ObjectID`, returns that, otherwise creates a new
+     *              `ObjectID`.
      * @return - The ObjectID
      */
     protected function toId(mixed $id) : \MongoDB\BSON\ObjectID
     {
-        return $id instanceof \MongoDB\BSON\ObjectID ? $id : new \MongoDB\BSON\ObjectID((string)$id);
+        return $id instanceof \MongoDB\BSON\ObjectID ? $id : new \MongoDB\BSON\ObjectID((string) $id);
+    }
+
+    /**
+     * Transforms literals into MongoDB ObjectIds.
+     *
+     * @param $ids - Goes through each entry, converts to `ObjectID`
+     * @return - The ObjectIDs
+     */
+    protected function toIds(\ConstVector<mixed> $ids): \ConstVector<\MongoDB\BSON\ObjectID>
+    {
+        return $ids->map(
+            $a ==> $a instanceof \MongoDB\BSON\ObjectID ? $a : new \MongoDB\BSON\ObjectID((string) $a)
+        );
     }
 
     /**
@@ -54,7 +67,7 @@ trait MongoHelper
      *        `\DateTimeInterface`, or a `\MongoDB\BSON\UTCDateTime`
      * @return - The MongoDB datetime or null
      */
-    protected function toDate(mixed $date) : ?\MongoDB\BSON\UTCDateTime
+    protected function toDate(mixed $date): ?\MongoDB\BSON\UTCDateTime
     {
         if ($date instanceof \MongoDB\BSON\UTCDateTime) {
             return $date;
@@ -74,7 +87,7 @@ trait MongoHelper
      * @return - Returns `$document`
      * @throws Exception\Retrieval if the document is null
      */
-    protected function ensure<Ta>(mixed $id, ?Ta $document) : Ta
+    protected function ensure<Ta>(mixed $id, ?Ta $document): Ta
     {
         if ($document === null) {
             /* HH_FIXME[4110]: This is stringish */

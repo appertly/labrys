@@ -28,7 +28,7 @@ use Labrys\Getter;
 /**
  * Abstract MongoDB DAO Service
  */
-abstract class AbstractMongoDao<T> implements EntityRepo<T>
+abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
 {
     use MongoHelper;
 
@@ -189,9 +189,14 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
         if ($ids->isEmpty()) {
             return ImmVector{};
         }
-        $mids = $ids->map(
-            $a ==> $a instanceof ObjectID ? $a : new ObjectID((string) $a)
-        );
+        try {
+            $mids = $this->toIds($ids);
+        } catch (\MongoDB\Driver\Exception\InvalidArgumentException $e) {
+            if ($e->getMessage() === 'Invalid BSON ID provided') {
+                throw new \Labrys\Db\Exception\Retrieval('Could not load documents', 0, $e);
+            }
+            throw $e;
+        }
         return $this->maybeCacheAll($this->findAll(ImmMap{'_id' => ['$in' => $mids->toArray()]}));
     }
 
@@ -208,6 +213,57 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>
             $instances[(string)Getter::getId($entity)] = $entity;
         }
         return $instances->toImmMap();
+    }
+
+    /**
+     * Gets whether or not this class supports the reference type.
+     *
+     * @param $ref - The reference type (usually a MongoDB collection name)
+     * @return - `true` if the reference type is supported
+     */
+    public function isResolvable(string $ref): bool
+    {
+        return $this->collection === $ref;
+    }
+
+    /**
+     * Resolves a MongoDB DbRef.
+     *
+     * @param $ref - The DBRef to load
+     * @return - The loaded entity or `null` if not found
+     * @throws \InvalidArgumentException If `$ref` is of an unsupported type
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     */
+    public function resolve(shape('$ref' => string, '$id' => mixed) $ref): ?T
+    {
+        if (!$this->isResolvable($ref['$ref'])) {
+            throw new \InvalidArgumentException("Unsupported reference type: " . $ref['$ref']);
+        }
+        return $this->findById($ref['$id']);
+    }
+
+    /**
+     * Resolves multiple MongoDB DbRefs.
+     *
+     * @param $refs - The DBRefs to load
+     * @return - The loaded entities
+     * @throws \InvalidArgumentException If any `$ref`s are of an unsupported type
+     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     */
+    public function resolveAll(Traversable<shape('$ref' => string, '$id' => mixed)> $refs): Traversable<T>
+    {
+        $types = Set{};
+        $ids = Vector{};
+        foreach ($refs as $ref) {
+            $types[] = $ref['$ref'];
+            $ids[] = $ref['$id'];
+        }
+        foreach ($types as $type) {
+            if (!$this->isResolvable($type)) {
+                throw new \InvalidArgumentException("Unsupported reference type: " . $type);
+            }
+        }
+        return $this->getAll($ids);
     }
 
     /**

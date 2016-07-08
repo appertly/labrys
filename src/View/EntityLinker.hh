@@ -17,12 +17,27 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Route;
+namespace Labrys\View;
 
 /**
- * Tagging interface for Web-related exceptions.
+ * Allows the creation of `<a>` nodes that point to an entity's canonical location.
  */
-interface Exception
+interface EntityLinker
 {
-    require extends \Exception;
+    /**
+     * Whether this linker supports the provided entity.
+     *
+     * @param $entity - The entity to link
+     * @return - `true` if the entity is supported
+     */
+    public function supports(mixed $entity): bool;
+
+    /**
+     * Composes the link for a given entity.
+     *
+     * @param $entity - The entity to link
+     * @return - The XHP node for the entity's link
+     * @throws \InvalidArgumentException if the entity isn't supported
+     */
+    public function compose(mixed $entity) : Awaitable<\XHPRoot>;
 }
