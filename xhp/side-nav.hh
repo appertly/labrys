@@ -34,16 +34,16 @@ class :labrys:side-nav extends :x:element implements HasXHPHelpers
 
     category %flow;
     children (:labrys:nav-item)*;
-    attribute :labrys:side-box;
+    attribute :axe:side-box;
 
     protected function render(): XHPRoot
     {
-        return <labrys:side-box class="side-nav" label={$this->:label}>
+        return <axe:side-box class="side-nav" label={$this->:label}>
             <nav>
                 <ul>
                     {$this->getChildren()}
                 </ul>
             </nav>
-        </labrys:side-box>;
+        </axe:side-box>;
     }
 }
