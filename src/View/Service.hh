@@ -115,6 +115,27 @@ class Service
     }
 
     /**
+     * Clears Flash Messages.
+     *
+     * @param $name - The status
+     * @param $value - The message
+     * @param $current - Whether to add message to the current request
+     */
+    public function clearFlashMessages(bool $current = false) : void
+    {
+        $session = $this->container->getFirst(\Caridea\Session\Session::class);
+        if ($session === null) {
+            throw new \UnexpectedValueException("No Session Manager found");
+        }
+        $session->resume() || $session->start();
+        $flash = $this->container->getFirst(\Caridea\Session\FlashPlugin::class);
+        if ($flash === null) {
+            throw new \UnexpectedValueException("No Flash Plugin found");
+        }
+        $flash->clear($current);
+    }
+
+    /**
      * Keeps all current flash messages for the next request.
      */
     public function keepFlashMessages() : void
