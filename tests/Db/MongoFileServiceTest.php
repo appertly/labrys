@@ -34,12 +34,6 @@ class MongoFileServiceTest
     <<Test>>
     public async function testStore(Assert $assert): Awaitable<void>
     {
-        $mockFinfo = new class extends \finfo {
-            public function __construct(){}
-            public function __destruct(){}
-            public function file() { return 'text/html'; }
-        };
-
         $mockStream = new class implements \Psr\Http\Message\StreamInterface {
             public function __toString() { return ''; }
             public function close() {}
@@ -78,19 +72,19 @@ class MongoFileServiceTest
             }
         };
 
-        $mockMetaData = Map{"foo" => "bar"};
+        $mockMetaData = Map{"foo" => "bar", 'contentType' => 'text/html'};
 
         $mockGridFS = new class($assert, $this->mockId) extends \MongoDB\GridFS\Bucket {
             public function __construct(private Assert $assert, private mixed $id) {}
             public function uploadFromStream(string $name, ?resource $source, array $data)
             {
                 $this->assert->string($name)->is('my_file.txt');
-                $this->assert->mixed($data)->looselyEquals(['contentType' => 'text/html', 'metadata' => ['foo' => 'bar']]);
+                $this->assert->mixed($data)->looselyEquals(['contentType' => 'text/html', 'metadata' => ['foo' => 'bar', 'contentType' => 'text/html']]);
                 return $this->id;
             }
         };
 
-        $object = new MongoFileService($mockGridFS, $mockFinfo);
+        $object = new MongoFileService($mockGridFS);
 
         $assert->mixed($object->store($mockFile, $mockMetaData))->identicalTo($this->mockId);
     }
@@ -99,10 +93,6 @@ class MongoFileServiceTest
     public async function testRead(Assert $assert): Awaitable<void>
     {
         $mockGridFSFile = new \stdClass();
-        $mockFinfo = new class extends \finfo {
-            public function __construct(){}
-            public function __destruct(){}
-        };
 
         $mockGridFS = new class($mockGridFSFile) extends \MongoDB\GridFS\Bucket {
             public function __construct(private mixed $file) {}
@@ -117,7 +107,7 @@ class MongoFileServiceTest
             }
         };
 
-        $object = new MongoFileService($mockGridFS, $mockFinfo);
+        $object = new MongoFileService($mockGridFS);
         $assert->mixed($object->read($this->mockId))->identicalTo($mockGridFSFile);
     }
 }

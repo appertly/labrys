@@ -27,11 +27,13 @@ interface FileService<Tk,Tv>
     /**
      * Stores an uploaded file.
      *
+     * You should specify `contentType` in the `metadata` Map.
+     *
      * @param $file - The uploaded file
-     * @param $metadata - Any additional fields to persist
+     * @param $metadata - Any additional fields to persist. At the very least, try to supply `contentType`.
      * @return - The document ID of the stored file
      */
-    public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata) : Tk;
+    public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata): Tk;
 
     /**
      * Gets the file as a PSR-7 Stream.
@@ -63,7 +65,7 @@ interface FileService<Tk,Tv>
      * @param $id - The document identifier, either a string or `ObjectID`
      * @return - The stored file
      */
-    public function read(mixed $id) : ?Tv;
+    public function read(mixed $id): ?Tv;
 
     /**
      * Finds several files by some arbitrary criteria.
@@ -71,7 +73,7 @@ interface FileService<Tk,Tv>
      * @param $criteria - Field to value pairs
      * @return - The objects found
      */
-    public function readAll(\ConstMap<string,mixed> $criteria) : \Traversable<Tv>;
+    public function readAll(\ConstMap<string,mixed> $criteria): Traversable<Tv>;
 
     /**
      * Deletes a stored file.

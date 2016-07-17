@@ -32,25 +32,26 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
 
     /**
      * Creates a new MongoFileService
+     *
+     * @param $bucket - The GridFS Bucket
      */
-    public function __construct(private Bucket $bucket, private \finfo $finfo)
+    public function __construct(private Bucket $bucket)
     {
     }
 
     /**
      * Stores an uploaded file.
      *
+     * You should specify `contentType` in the `metadata` Map.
+     *
      * @param $file - The uploaded file
-     * @param $metadata - Any additional fields to persist
+     * @param $metadata - Any additional fields to persist. At the very least, try to supply `contentType`.
      * @return - The document ID of the stored file
      */
-    public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata) : ObjectID
+    public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata): ObjectID
     {
-        $mimeType = $file->getClientMediaType();
-        // TODO FIX THIS before production
-        // $mimeType = $this->finfo->file($file, FILEINFO_MIME_TYPE);
         $meta = [
-            "contentType" => $mimeType,
+            "contentType" => $metadata['contentType'] ?? $file->getClientMediaType(),
             'metadata' => $metadata->toArray()
         ];
         return $this->bucket->uploadFromStream(
