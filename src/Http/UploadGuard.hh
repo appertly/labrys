@@ -89,7 +89,7 @@ class UploadGuard
             $match = false;
             foreach ($mimeTypes as $t) {
                 if (substr($t, -2, 2) === '/*' &&
-                        substr_compare($mime, strstr($t, '/', true), 0) === 0) {
+                        substr_compare($mime, strstr($t, '/', true), 0, strlen($t) - 2) === 0) {
                     $match = true;
                     break;
                 }
