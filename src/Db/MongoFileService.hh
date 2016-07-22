@@ -25,6 +25,8 @@ use Psr\Http\Message\StreamInterface;
 
 /**
  * File upload service backed by GridFS.
+ *
+ * Requires the `mongodb/mongodb` composer package to be installed.
  */
 class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
 {

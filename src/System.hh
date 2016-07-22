@@ -23,67 +23,38 @@ use Caridea\Container\Properties;
 use Caridea\Container\Objects;
 
 /**
- * The system bootstrapper.
+ * A bootstrapper that reads configuration and creates backend and frontend containers.
+ *
+ * This class expects a `Traversable` full of class names in the
+ * `system.modules` configuration setting. Each class name *must* extend
+ * `Labrys\Module` or an `UnexpectedValueException` will be thrown.
  */
-class System
+class System extends Configuration
 {
     /**
-     * @var Instantiated modules
+     * The backend container
      */
-    private ImmVector<Module> $modules;
+    protected Objects $backend;
     /**
-     * @var The config container
+     * The frontend container
      */
-    private Properties $config;
-    /**
-     * @var The backend container
-     */
-    private Objects $backend;
-    /**
-     * @var The frontend container
-     */
-    private Objects $frontend;
+    protected Objects $frontend;
 
     /**
      * Creates a new System.
      *
+     * This constructor expects a `Traversable` full of class names in the
+     * `system.modules` configuration setting. Each class name *must* extend
+     * `Labrys\Module` or an `UnexpectedValueException` will be thrown.
+     *
      * @param $config - The system configuration
+     * @throws \UnexpectedValueException if a module class doesn't extend `Labrys\Module`
      */
     public function __construct(\ConstMap<string,mixed> $config)
     {
-        $this->modules = $this->createModules($config);
-        $this->config = $this->createConfigContainer($config);
+        parent::__construct($config);
         $this->backend = $this->createBackendContainer($this->config);
         $this->frontend = $this->createFrontendContainer($this->backend);
-    }
-
-    private function createModules(\ConstMap<string,mixed> $config) : ImmVector<Module>
-    {
-        $modules = Vector{};
-        $sysModules = $config->get('system.modules');
-        if ($sysModules instanceof Traversable) {
-            foreach ($sysModules as $className) {
-                if (!is_a($className, \Labrys\Module::class, true)) {
-                    throw new \UnexpectedValueException("Not a module class: '$className'");
-                } else {
-                    /* HH_IGNORE_ERROR[4026]: This works as intended */
-                    $modules[] = new $className();
-                }
-            }
-        }
-        return $modules->toImmVector();
-    }
-
-    private function createConfigContainer(\ConstMap<string,mixed> $config) : Properties
-    {
-        $sysConfig = Map{};
-        // first set module defaults
-        foreach ($this->modules as $module) {
-            $sysConfig->setAll($module->getConfig());
-        }
-        // then bring in user-specified values
-        $sysConfig->setAll($config);
-        return new Properties($sysConfig->toArray());
     }
 
     private function createBackendContainer(Properties $parent) : Objects
@@ -95,7 +66,7 @@ class System
         return $builder->build($parent);
     }
 
-    private function createFrontendContainer(Objects $parent) : Objects
+    private function createFrontendContainer(Objects $parent): Objects
     {
         $builder = Objects::builder();
         foreach ($this->modules as $module) {
@@ -105,21 +76,11 @@ class System
     }
 
     /**
-     * Gets the configuration settings container.
-     *
-     * @return - The config container
-     */
-    public function getConfigContainer() : Properties
-    {
-        return $this->config;
-    }
-
-    /**
      * Gets the container with backend classes.
      *
      * @return - The backend container
      */
-    public function getBackendContainer() : Objects
+    public function getBackendContainer(): Objects
     {
         return $this->backend;
     }
@@ -129,18 +90,8 @@ class System
      *
      * @return - The frontend container
      */
-    public function getFrontendContainer() : Objects
+    public function getFrontendContainer(): Objects
     {
         return $this->frontend;
-    }
-
-    /**
-     * Gets the loaded modules.
-     *
-     * @return - The loaded modules
-     */
-    public function getModules() : ImmVector<Module>
-    {
-        return $this->modules;
     }
 }

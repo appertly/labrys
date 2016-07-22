@@ -119,11 +119,7 @@ class Rescuer implements \Labrys\Route\Plugin
                 $response = $response->withHeader($k, $v);
             }
         } elseif ($e instanceof \Caridea\Acl\Exception\Forbidden) {
-            if ($e->getPrevious() !== null && $e->getPrevious() instanceof \Labrys\Db\Exception\Retrieval) {
-                $response = $response->withStatus(404, 'Not Found');
-            } else {
-                $response = $response->withStatus(403, 'Forbidden');
-            }
+            $response = $response->withStatus(403, 'Forbidden');
         } elseif ($e instanceof \Labrys\Db\Exception\Retrieval) {
             $response = $response->withStatus(404, 'Not Found');
         } elseif ($e instanceof \Labrys\Db\Exception\Concurrency ||

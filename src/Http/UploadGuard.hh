@@ -23,7 +23,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
 
 /**
- * Authentication plugin for the middleware dispatcher.
+ * A helper for dealing with file upload validation.
+ *
+ * @since 0.4.6
  */
 class UploadGuard
 {
@@ -43,6 +45,7 @@ class UploadGuard
      * @param $request - The PSR HTTP Request
      * @param $field - The request field containing the files
      * @param $maxSize - The maximum allowed file size
+     * @return - The uploaded files
      * @throws \Caridea\Validate\Exception\Invalid if any files aren't valid
      */
     public function getUploadedFiles(Request $request, string $field, ?int $maxSize = null): \ConstVector<UploadedFileInterface>

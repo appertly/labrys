@@ -1,4 +1,4 @@
-<?hh // strict
+<?hh
 /**
  * Labrys
  *
@@ -27,12 +27,12 @@ use Axe\Page;
 class Service
 {
     /**
-     * @var The page
+     * The page
      */
     private ?Page $page;
 
     /**
-     * @var List of statuses
+     * List of statuses
      */
     private static ImmVector<string> $statuses = ImmVector{'msg-warning', 'msg-info', 'msg-error'};
 
@@ -51,7 +51,7 @@ class Service
      * @param $title - The page title
      * @return - A Page
      */
-    public function getPage(\Stringish $title) : Page
+    public function getPage(\Stringish $title): Page
     {
         if ($this->page === null) {
             $page = (new Page())->setTitle($this->getPageTitle($title));
@@ -66,7 +66,7 @@ class Service
      *
      * @param $page - The page to visit
      */
-    protected async function callPageVisitors(Page $page) : Awaitable<Vector<mixed>>
+    protected async function callPageVisitors(Page $page): Awaitable<Vector<mixed>>
     {
         return await \HH\Asio\v(
             array_map(
@@ -82,7 +82,7 @@ class Service
      * @param $title - The page title
      * @return - The formatted page title
      */
-    protected function getPageTitle(?\Stringish $title) : string
+    protected function getPageTitle(?\Stringish $title): string
     {
         return sprintf(
         /* HH_FIXME[4110]: HHVM is weird with this method */
@@ -100,7 +100,7 @@ class Service
      * @param $value - The message
      * @param $current - Whether to add message to the current request
      */
-    public function setFlashMessage(string $name, string $value, bool $current = false) : void
+    public function setFlashMessage(string $name, string $value, bool $current = false): void
     {
         $session = $this->container->getFirst(\Caridea\Session\Session::class);
         if ($session === null) {
@@ -121,7 +121,7 @@ class Service
      * @param $value - The message
      * @param $current - Whether to add message to the current request
      */
-    public function clearFlashMessages(bool $current = false) : void
+    public function clearFlashMessages(bool $current = false): void
     {
         $session = $this->container->getFirst(\Caridea\Session\Session::class);
         if ($session === null) {
@@ -138,7 +138,7 @@ class Service
     /**
      * Keeps all current flash messages for the next request.
      */
-    public function keepFlashMessages() : void
+    public function keepFlashMessages(): void
     {
         $session = $this->container->getFirst(\Caridea\Session\Session::class);
         if ($session === null) {
@@ -157,7 +157,7 @@ class Service
      *
      * @return - ImmMap of flash messages
      */
-    public function getFlashMessages() : ImmMap<string,ImmVector<string>>
+    public function getFlashMessages(): \ConstMap<string,ImmVector<string>>
     {
         $flash = $this->container->getFirst(\Caridea\Session\FlashPlugin::class);
         if ($flash === null) {
@@ -189,10 +189,32 @@ class Service
      * @param $region - The region to search
      * @return - The found blocks in that region, or an empty array.
      */
-    public function getBlocks(string $region) : ImmVector<Block>
+    public function getBlocks(string $region): \ConstVector<Block>
     {
         $blocks = new Vector($this->container->getByType(Block::class));
         $blocks = $blocks->filter((Block $b) ==> $region === $b->getRegion());
         return $blocks->toImmVector();
+    }
+
+    /**
+     * Gets any `Labrys\Db\DbRefResolver` objects in the container.
+     *
+     * @return - The DbRefResolver objects found.
+     * @since 0.5.0
+     */
+    public function getDbRefResolvers(): \ConstVector<\Labrys\Db\DbRefResolver>
+    {
+        return new ImmVector($this->container->getByType(\Labrys\Db\DbRefResolver::class));
+    }
+
+    /**
+     * Gets any `Labrys\View\EntityLinker` objects in the container.
+     *
+     * @return - The EntityLinker objects found.
+     * @since 0.5.0
+     */
+    public function getEntityLinkers(): \ConstVector<EntityLinker>
+    {
+        return new ImmVector($this->container->getByType(EntityLinker::class));
     }
 }

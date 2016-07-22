@@ -22,6 +22,8 @@ namespace Labrys\Db;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Manager;
+use MongoDB\Driver\ReadPreference;
+use MongoDB\Driver\WriteConcern;
 use MongoDB\Driver\WriteResult;
 use Labrys\Getter;
 
@@ -45,6 +47,14 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
      */
     private array<string,?string> $typeMap = ['root' => null, 'document' => null];
     /**
+     * The MongoDB read preference
+     */
+    private ?ReadPreference $readPreference;
+    /**
+     * The MongoDB write concern
+     */
+    private ?WriteConcern $writeConcern;
+    /**
      * First-level cache
      */
     private Map<string,T> $cache = Map{};
@@ -57,6 +67,8 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
      * * `caching` – Whether to cache entities by ID (default: true)
      * * `typeMapRoot` – The type used to unserialize BSON root documents
      * * `typeMapDocument` – The type used to unserialize BSON nested documents
+     * * `readPreference` – Must be a `MongoDB\Driver\ReadPreference`
+     * * `writeConcern` – Must be a `MongoDB\Driver\WriteConcern`
      *
      * As for the `typeMap` options, you can see
      * [Deserialization from BSON](http://php.net/manual/en/mongodb.persistence.deserialization.php#mongodb.persistence.typemaps)
@@ -87,6 +99,14 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
                 $d = $options['typeMapDocument'];
                 $this->typeMap['document'] = $d === null ? null : (string)$d;
             }
+            $rp = $options['readPreference'] ?? null;
+            if ($rp instanceof ReadPreference) {
+                $this->readPreference = $rp;
+            }
+            $wc = $options['writeConcern'] ?? null;
+            if ($wc instanceof WriteConcern) {
+                $this->writeConcern = $wc;
+            }
         }
     }
 
@@ -102,7 +122,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
         return $this->maybeCache(
             $this->doExecute(function (Manager $m, string $c) use ($criteria) {
                 $q = new \MongoDB\Driver\Query($criteria->toArray(), ['limit' => 1]);
-                $res = $m->executeQuery($c, $q);
+                $res = $m->executeQuery($c, $q, $this->readPreference);
                 $res->setTypeMap($this->typeMap);
                 $resa = $res->toArray();
                 return count($resa) > 0 ? current($resa) : null;
@@ -137,7 +157,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
                 }
             }
             $q = new \MongoDB\Driver\Query($criteria->toArray(), $qo);
-            $res = $m->executeQuery($c, $q);
+            $res = $m->executeQuery($c, $q, $this->readPreference);
             $res->setTypeMap($this->typeMap);
             return $res;
         });
@@ -290,7 +310,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
         return $this->doExecute(function (Manager $m, string $c) use ($record) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->insert($record);
-            return $m->executeBulkWrite($c, $bulk);
+            return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
     }
 
@@ -313,7 +333,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
         return $this->doExecute(function (Manager $m, string $c) use ($record) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->insert($record);
-            return $m->executeBulkWrite($c, $bulk);
+            return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
     }
 
@@ -373,7 +393,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
         return $this->doExecute(function (Manager $m, string $c) use ($mid, $ops) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->update(['_id' => $mid], $ops);
-            return $m->executeBulkWrite($c, $bulk);
+            return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
     }
 
@@ -391,7 +411,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
         return $this->doExecute(function (Manager $m, string $c) use ($mid) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->delete(['_id' => $mid], ['limit' => 1]);
-            return $m->executeBulkWrite($c, $bulk);
+            return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
     }
 
