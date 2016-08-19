@@ -20,13 +20,19 @@
 namespace Labrys\Http;
 
 use HackPack\HackUnit\Contract\Assert;
+use Mockery as M;
 
 class ReporterTest
 {
     <<Test>>
     public async function testRun1(Assert $assert): Awaitable<void>
     {
-        $logger = new ReporterFakeLogger($assert);
+        $logger = M::mock(\Psr\Log\LoggerInterface::class);
+        $logger->shouldReceive('log')->andReturnUsing(function ($a, $b, $c) use ($assert) {
+            $assert->mixed($a)->identicalTo(\Psr\Log\LogLevel::ERROR);
+            $assert->string($b)->is('foobar');
+            $assert->mixed($c['exception'])->isTypeOf(\RuntimeException::class);
+        });
         $errorLogger = new \Labrys\ErrorLogger($logger);
         $reporter = new Reporter($errorLogger);
         $next = function ($req, $res) use ($assert) {
@@ -37,25 +43,6 @@ class ReporterTest
         $assert->whenCalled(function () use ($reporter, $request, $response, $next){
             $reporter->__invoke($request, $response, $next);
         })->willThrowClass(\RuntimeException::class);
-        $assert->bool($logger->called)->is(true);
-    }
-}
-
-class ReporterFakeLogger implements \Psr\Log\LoggerInterface
-{
-    use \Psr\Log\LoggerTrait;
-
-    public bool $called = false;
-
-    public function __construct(private Assert $assert)
-    {
-    }
-
-    public function log(mixed $level, $message, array<string,mixed> $context = array()): void
-    {
-        $this->called = true;
-        $this->assert->mixed($level)->identicalTo(\Psr\Log\LogLevel::ERROR);
-        $this->assert->string($message)->is('foobar');
-        $this->assert->mixed($context['exception'])->isTypeOf(\RuntimeException::class);
+        M::close();
     }
 }

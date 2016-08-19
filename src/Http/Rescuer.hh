@@ -120,14 +120,15 @@ class Rescuer implements \Labrys\Route\Plugin
             }
         } elseif ($e instanceof \Caridea\Acl\Exception\Forbidden) {
             $response = $response->withStatus(403, 'Forbidden');
-        } elseif ($e instanceof \Labrys\Db\Exception\Retrieval) {
+        } elseif ($e instanceof \Caridea\Dao\Exception\Unretrievable ||
+            $e instanceof \Caridea\Acl\Exception\Unloadable) {
             $response = $response->withStatus(404, 'Not Found');
-        } elseif ($e instanceof \Labrys\Db\Exception\Concurrency ||
-            $e instanceof \Labrys\Db\Exception\Integrity) {
+        } elseif ($e instanceof \Caridea\Dao\Exception\Conflicting ||
+            $e instanceof \Caridea\Dao\Exception\Duplicative) {
             $response = $response->withStatus(409, 'Conflict');
         } elseif ($e instanceof \Caridea\Validate\Exception\Invalid) {
             $response = $response->withStatus(422, 'Unprocessable Entity');
-        } elseif ($e instanceof \Labrys\Db\Exception\Locked) {
+        } elseif ($e instanceof \Caridea\Dao\Exception\Locked) {
             $response = $response->withStatus(423, 'Locked');
         } else {
             $response = $response->withStatus(500, 'Internal Server Error');
@@ -169,24 +170,19 @@ class Rescuer implements \Labrys\Route\Plugin
             $values['status'] = $code;
             $values['detail'] = self::$messages[$code];
         } elseif ($e instanceof \Caridea\Acl\Exception\Forbidden) {
-            if ($e->getPrevious() !== null && $e->getPrevious() instanceof \Labrys\Db\Exception\Retrieval) {
-                $values['title'] = 'Resource Not Found';
-                $values['status'] = 404;
-                $values['detail'] = self::$messages[404];
-            } else {
-                $values['title'] = 'Access Denied';
-                $values['status'] = 403;
-                $values['detail'] = self::$messages[403];
-            }
-        } elseif ($e instanceof \Labrys\Db\Exception\Retrieval) {
+            $values['title'] = 'Access Denied';
+            $values['status'] = 403;
+            $values['detail'] = self::$messages[403];
+        } elseif ($e instanceof \Caridea\Dao\Exception\Unretrievable ||
+            $e instanceof \Caridea\Acl\Exception\Unloadable) {
             $values['title'] = 'Resource Not Found';
             $values['status'] = 404;
             $values['detail'] = self::$messages[404];
-        } elseif ($e instanceof \Labrys\Db\Exception\Integrity) {
+        } elseif ($e instanceof \Caridea\Dao\Exception\Duplicative) {
             $values['title'] = 'Constraint Violation';
             $values['status'] = 409;
             $values['detail'] = 'The data you submitted violates unique constraints. Most likely, this is a result of an existing record with similar data. Double-check existing records and try again.';
-        } elseif ($e instanceof \Labrys\Db\Exception\Concurrency) {
+        } elseif ($e instanceof \Caridea\Dao\Exception\Conflicting) {
             $values['title'] = 'Concurrent Modification';
             $values['status'] = 409;
             $values['detail'] = 'Someone else saved changes to this same data while you were editing. Try your request again using the latest copy of the record.';
@@ -199,7 +195,7 @@ class Rescuer implements \Labrys\Route\Plugin
                 $errors[] = ImmMap{'field' => $field, 'code' => $code};
             }
             $extra['errors'] = $errors;
-        } elseif ($e instanceof \Labrys\Db\Exception\Locked) {
+        } elseif ($e instanceof \Caridea\Dao\Exception\Locked) {
             $values['title'] = 'Resource Locked';
             $values['status'] = 423;
             $values['detail'] = self::$messages[423];

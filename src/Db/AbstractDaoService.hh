@@ -43,45 +43,34 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     protected abstract function getDao(): EntityRepo<Ta>;
 
     /**
-     * Gets the type of entity produced, mainly for ACL reasons.
-     *
-     * @return - The entity type
+     * {@inheritDoc}
      */
-    public function getType() : string
+    public function getType(): string
     {
         return $this->getDao()->getType();
     }
 
     /**
-     * Finds a single record by some arbitrary criteria.
-     *
-     * @param $criteria - Field to value pairs
-     * @return - The object found or null if none
+     * {@inheritDoc}
      */
-    public function findOne(\ConstMap<string,mixed> $criteria) : ?Ta
+    public function findOne(\ConstMap<string,mixed> $criteria): ?Ta
     {
         return $this->getDao()->findOne($criteria);
     }
 
     /**
-     * Finds several records by some arbitrary criteria.
-     *
-     * @param $criteria - Field to value pairs
-     * @param $pagination - Optional pagination parameters
-     * @return - The objects found or null if none
+     * {@inheritDoc}
      */
-    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Traversable<Ta>
+    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null): Traversable<Ta>
     {
         return $this->getDao()->findAll($criteria, $pagination);
     }
 
     /**
-     * Gets a single document by ID.
-     *
-     * @param $id - The document identifier
-     * @return - The BSON document
+     * {@inheritDoc}
+     * @throws \Caridea\Acl\Exception\Forbidden If the user has no access
      */
-    public function findById(mixed $id) : ?Ta
+    public function findById(mixed $id): ?Ta
     {
         $dao = $this->getDao();
         $entity = $dao->findById($id);
@@ -92,56 +81,66 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     }
 
     /**
-     * Gets a single document by ID, throwing an exception if it's not found.
-     *
-     * @param $id - The document identifier
-     * @return - The entity
-     * @throws \Labrys\Db\Exception\Retrieval If the document doesn't exist
+     * {@inheritDoc}
+     * @throws \Caridea\Acl\Exception\Forbidden If the user has no access
      */
-    public function get(mixed $id) : Ta
+    public function get(mixed $id): Ta
     {
-        $dao = $this->getDao();
-        $this->gatekeeper->assert('read', $dao->getType(), (string) $id);
-        return $dao->get($id);
+        return $this->getAndAssert($id, 'read');
     }
 
     /**
-     * Gets several documents by ID.
-     *
-     * @param $ids - Array of identifiers
-     * @return - The results
+     * {@inheritDoc}
+     * @throws \Caridea\Acl\Exception\Forbidden If the user has no access
      */
-    public function getAll(\ConstVector<mixed> $ids) : Traversable<Ta>
+    public function getAll(\ConstVector<mixed> $ids): Traversable<Ta>
     {
         $dao = $this->getDao();
-        $all = $dao->getAll($ids);
-        $type = $dao->getType();
-        foreach ($all as $v) {
-            $this->gatekeeper->assert('read', $type, (string) Getter::getId($v));
-        }
-        return $all;
+        $this->gatekeeper->assertAll('read', $dao->getType(), $ids);
+        return $dao->getAll($ids);
     }
 
     /**
-     * Gets a Map that relates identifier to instance
-     *
-     * @param $entities - The entities to "zip"
-     * @return - The instances keyed by identifier
+     * {@inheritDoc}
      */
-    public function getInstanceMap(Traversable<Ta> $entities) : ImmMap<string,Ta>
+    public function getInstanceMap(Traversable<Ta> $entities): ImmMap<string,Ta>
     {
         return $this->getDao()->getInstanceMap($entities);
+    }
+
+    /**
+     * Gets the entity and asserts an ACL permission.
+     *
+     * @since 0.5.1
+     * @param $id - The entity id
+     * @param $verb - The verb (e.g. 'read', 'write')
+     * @return - The entity
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
+     * @throws \Caridea\Acl\Exception\Forbidden If the user has no access
+     */
+    protected function getAndAssert(mixed $id, string $verb): Ta
+    {
+        $dao = $this->getDao();
+        $this->gatekeeper->assert($verb, $dao->getType(), $id);
+        return $dao->get($id);
     }
 
     /**
      * Gets the record, but tests the 'write' permission
      *
      * @param $id - The entity id
+     * @return - The entity
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
+     * @throws \Caridea\Acl\Exception\Forbidden If the user has no access
+     * @deprecated 0.5.1:1.0.0 Use `getAndAssert($id, 'write')` instead
      */
-    protected function getForUpdate(mixed $id) : Ta
+    <<__Deprecated("Use getAndAssert(id, 'write') instead")>>
+    protected function getForUpdate(mixed $id): Ta
     {
-        $dao = $this->getDao();
-        $this->gatekeeper->assert('write', $dao->getType(), (string)$id);
-        return $dao->get($id);
+        return $this->getAndAssert($id, 'write');
     }
 }

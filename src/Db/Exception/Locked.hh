@@ -21,7 +21,8 @@ namespace Labrys\Db\Exception;
 
 /**
  * Exception for unmodifiable records due to business logic, not permissions.
+ * @deprecated 0.5.1:0.6.0
  */
-class Locked extends \RuntimeException implements \Labrys\Db\Exception
+class Locked extends \Caridea\Dao\Exception\Locked implements \Labrys\Db\Exception
 {
 }

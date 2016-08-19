@@ -40,8 +40,7 @@ class Gatekeeper
         private \Caridea\Acl\Service $aclService,
         private \Caridea\Auth\Principal $principal,
         array<SubjectResolver> $subjectResolvers
-    )
-    {
+    ) {
         $subjects = Vector{\Caridea\Acl\Subject::principal((string)$principal->getUsername())};
         foreach ($subjectResolvers as $resolver) {
             $subjects->addAll($resolver->getSubjects($principal));
@@ -64,6 +63,26 @@ class Gatekeeper
             $verb,
             new \Caridea\Acl\Target($type, $id)
         );
+    }
+
+    /**
+     * Determines if the currently authenticated user can access the resources.
+     *
+     * @since 0.5.1
+     * @param $verb - The verb (e.g. 'read', 'write')
+     * @param $type - The type of object
+     * @param $ids - The object identifiers
+     * @throws \Caridea\Acl\Exception\Forbidden If the user has no access
+     */
+    public function assertAll<T>(string $verb, string $type, Traversable<T> $ids): void
+    {
+        $targets = Vector::fromItems($ids)->map($a ==> new \Caridea\Acl\Target($type, $a));
+        $acls = $this->aclService->getAll($targets->toArray(), $this->subjects);
+        foreach ($acls as $acl) {
+            if (!$acl->can($this->subjects, $verb)) {
+                throw new \Caridea\Acl\Exception\Forbidden("Access denied to $verb " . (string)$acl->getTarget());
+            }
+        }
     }
 
     /**

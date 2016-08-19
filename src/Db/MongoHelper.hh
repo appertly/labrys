@@ -85,13 +85,13 @@ trait MongoHelper
      * @param $id - The document identifier, either a `\MongoDB\BSON\ObjectID` or string
      * @param $document - The document to check
      * @return - Returns `$document`
-     * @throws Exception\Retrieval if the document is null
+     * @throws \Caridea\Dao\Exception\Unretrievable if the document is null
      */
     protected function ensure<Ta>(mixed $id, ?Ta $document): Ta
     {
         if ($document === null) {
             /* HH_FIXME[4110]: This is stringish */
-            throw new Exception\Retrieval("Could not find document with ID $id");
+            throw new \Caridea\Dao\Exception\Unretrievable("Could not find document with ID $id");
         }
         return $document;
     }
@@ -101,14 +101,11 @@ trait MongoHelper
      *
      * @param $e - The exception to translate
      * @return - The exception to use
+     * @deprecated 0.5.1:0.6.0
      */
+    <<__Deprecated("Use \Caridea\Dao\Exception\Translator\MongoDb::translate")>>
     protected static function translateException(\Exception $e): \Exception
     {
-        // TODO exception stuff
-        if ($e instanceof \MongoDB\Driver\Exception\RuntimeException &&
-            ($e->getCode() == 11000 || 'E11000' == substr($e->getMessage(), 0, 6))) {
-            return new Exception\Integrity("Unique constraint violation", 409, $e);
-        }
-        return new Exception\System("Uncategorized database error", 0, $e);
+        return \Caridea\Dao\Exception\Translator\MongoDb::translate($e);
     }
 }

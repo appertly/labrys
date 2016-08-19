@@ -21,7 +21,8 @@ namespace Labrys\Db\Exception;
 
 /**
  * Exception for data retrieval issues.
+ * @deprecated 0.5.1:0.6.0
  */
-class Retrieval extends \UnexpectedValueException implements \Labrys\Db\Exception
+class Retrieval extends \Caridea\Dao\Exception\Unretrievable implements \Labrys\Db\Exception
 {
 }

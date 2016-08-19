@@ -29,8 +29,7 @@ interface UserProvider<T>
      *
      * @return - The current authenticated user
      * @throws \UnexpectedValueException if the current principal is anonymous
-     * @throws \Labrys\Db\Exception\Retrieval If the entity doesn't exist
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @throws \Caridea\Dao\Exception If a database problem occurs
      */
     public function getUser() : User<T>;
 }

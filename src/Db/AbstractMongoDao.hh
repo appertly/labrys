@@ -30,7 +30,7 @@ use Labrys\Getter;
 /**
  * Abstract MongoDB DAO Service
  */
-abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
+abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements EntityRepo<T>, DbRefResolver<T>
 {
     use MongoHelper;
 
@@ -80,12 +80,12 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
      * @param $options - Map of configuration values
      */
     public function __construct(
-        private Manager $manager,
-        private string $collection,
+        Manager $manager,
+        string $collection,
         protected ?\Caridea\Validate\Validator $validator = null,
-        ?\ConstMap<string,mixed> $options = null
-    )
-    {
+        ?\ConstMap<string,mixed> $options = null,
+    ) {
+        parent::__construct($manager, $collection);
         if ($options !== null) {
             $this->versioned = $options->containsKey('version') ?
                 (bool) $options['version'] : true;
@@ -111,11 +111,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Finds a single record by some arbitrary criteria.
-     *
-     * @param $criteria - Field to value pairs
-     * @return - The object found or null if none
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * {@inheritDoc}
      */
     public function findOne(\ConstMap<string,mixed> $criteria) : ?T
     {
@@ -131,12 +127,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Finds several records by some arbitrary criteria.
-     *
-     * @param $criteria - Field to value pairs
-     * @param $pagination - Optional pagination parameters
-     * @return - The objects found or null if none
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * {@inheritDoc}
      */
     public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Cursor<T>
     {
@@ -164,11 +155,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Gets a single document by ID.
-     *
-     * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
-     * @return - The BSON document
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * {@inheritDoc}
      */
     public function findById(mixed $id) : ?T
     {
@@ -176,7 +163,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
             $mid = $this->toId($id);
         } catch (\MongoDB\Driver\Exception\InvalidArgumentException $e) {
             if ($e->getMessage() === 'Invalid BSON ID provided') {
-                throw new \Labrys\Db\Exception\Retrieval('Could not find document', 0, $e);
+                throw new \Caridea\Dao\Exception\Unretrievable('Could not find document', 0, $e);
             }
             throw $e;
         }
@@ -185,12 +172,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Gets a single document by ID, throwing an exception if it's not found.
-     *
-     * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
-     * @return - The BSON document
-     * @throws \Labrys\Db\Exception\Retrieval If the document doesn't exist
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * {@inheritDoc}
      */
     public function get(mixed $id) : T
     {
@@ -198,11 +180,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Gets several documents by ID.
-     *
-     * @param $ids - Array of either strings or `ObjectID`s.
-     * @return - The results
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * {@inheritDoc}
      */
     public function getAll(\ConstVector<mixed> $ids) : Traversable<T>
     {
@@ -213,18 +191,26 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
             $mids = $this->toIds($ids);
         } catch (\MongoDB\Driver\Exception\InvalidArgumentException $e) {
             if ($e->getMessage() === 'Invalid BSON ID provided') {
-                throw new \Labrys\Db\Exception\Retrieval('Could not load documents', 0, $e);
+                throw new \Caridea\Dao\Exception\Unretrievable('Could not load documents', 0, $e);
             }
             throw $e;
         }
-        return $this->maybeCacheAll($this->findAll(ImmMap{'_id' => ['$in' => $mids->toArray()]}));
+        $cmp = array_flip($ids->map($a ==> (string) $a));
+        $fromCache = new ImmVector(array_intersect_key($this->cache, $cmp));
+        if (count($fromCache) === count($ids)) {
+            return $fromCache;
+        } elseif (count($fromCache) > 0) {
+            $mids = $mids->filter($a ==> !array_key_exists((string)$a, $fromCache));
+            return $fromCache->concat(
+                $this->maybeCacheAll($this->findAll(ImmMap{'_id' => ['$in' => $mids->toArray()]}))
+            );
+        } else {
+            return $this->maybeCacheAll($this->findAll(ImmMap{'_id' => ['$in' => $mids->toArray()]}));
+        }
     }
 
     /**
-     * Gets a Map that relates identifier to instance
-     *
-     * @param $entities - The entities to "zip"
-     * @return - The instances keyed by identifier
+     * {@inheritDoc}
      */
     public function getInstanceMap(Traversable<T> $entities) : ImmMap<string,T>
     {
@@ -236,10 +222,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Gets whether or not this class supports the reference type.
-     *
-     * @param $ref - The reference type (usually a MongoDB collection name)
-     * @return - `true` if the reference type is supported
+     * {@inheritDoc}
      */
     public function isResolvable(string $ref): bool
     {
@@ -247,12 +230,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Resolves a MongoDB DbRef.
-     *
-     * @param $ref - The DBRef to load
-     * @return - The loaded entity or `null` if not found
-     * @throws \InvalidArgumentException If `$ref` is of an unsupported type
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * {@inheritDoc}
      */
     public function resolve(shape('$ref' => string, '$id' => mixed) $ref): ?T
     {
@@ -263,12 +241,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     }
 
     /**
-     * Resolves multiple MongoDB DbRefs.
-     *
-     * @param $refs - The DBRefs to load
-     * @return - The loaded entities
-     * @throws \InvalidArgumentException If any `$ref`s are of an unsupported type
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * {@inheritDoc}
      */
     public function resolveAll(Traversable<shape('$ref' => string, '$id' => mixed)> $refs): Traversable<T>
     {
@@ -292,8 +265,9 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
      * @param $record - The record to insert, ready to go
      * @return - Whatever MongoDB returns
      * @throws \Caridea\Validate\Exception\Invalid if validation fails
-     * @throws \Labrys\Db\Exception\Integrity If a unique constraint is violated
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     protected function doCreate(\ConstMap<string,mixed> $record): WriteResult
     {
@@ -320,8 +294,9 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
      * @param $record - The document to insert, ready to go
      * @return - Whatever MongoDB returns
      * @throws \Caridea\Validate\Exception\Invalid if validation fails
-     * @throws \Labrys\Db\Exception\Integrity If a unique constraint is violated
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      * @since 0.3.0
      */
     protected function doPersist(\MongoDB\BSON\Persistable $record): WriteResult
@@ -340,14 +315,51 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
     /**
      * Updates a record.
      *
+     * You should check optimistic lock version *before* calling this method.
+     *
+     * @param $entity - The entity to update
+     * @return - Whatever MongoDB returns
+     * @throws \Caridea\Validate\Exception\Invalid if validation fails
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
+     * @since 0.5.1
+     */
+    protected function doUpdateModifiable(Entity\Modifiable $entity): ?WriteResult
+    {
+        if (!$entity->isDirty()) {
+            return null;
+        }
+        $mid = Getter::getId($entity);
+        // check validation
+        if ($this->validator) {
+            $this->validator->assert($entity->bsonSerialize());
+        }
+        $ops = $entity->getChanges()->map($a ==> $a->toArray())->toArray();
+        if ($this->versioned) {
+            $ops['$inc']['version'] = 1;
+        }
+        $this->cache->removeKey((string)$mid);
+        return $this->doExecute(function (Manager $m, string $c) use ($mid, $ops) {
+            $bulk = new \MongoDB\Driver\BulkWrite();
+            $bulk->update(['_id' => $mid], $ops);
+            return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
+        });
+    }
+
+    /**
+     * Updates a record.
+     *
      * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
      * @param $record - The record to update, ready to go
      * @return - Whatever MongoDB returns
      * @throws \Caridea\Validate\Exception\Invalid if validation fails
-     * @throws \Labrys\Db\Exception\Retrieval If the document doesn't exist
-     * @throws \Labrys\Db\Exception\Integrity If a unique constraint is violated
-     * @throws \Labrys\Db\Exception\Concurrency If optimistic locking fails
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Conflicting If optimistic/pessimistic lock fails
+     * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     protected function doUpdate(mixed $id, \ConstMap<string,mixed> $record, ?\ConstMap<string,mixed> $extraOps = null): WriteResult
     {
@@ -369,7 +381,7 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
             if (array_key_exists('version', $record)) {
                 $origVersion = (int)Getter::get($orig, 'version');
                 if ($origVersion > $record['version']) {
-                    throw new Exception\Concurrency("Document version conflict");
+                    throw new \Caridea\Dao\Exception\Conflicting("Document version conflict");
                 }
                 unset($record['version']);
             }
@@ -402,7 +414,9 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
      *
      * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
      * @return - Whatever MongoDB returns
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     protected function doDelete(mixed $id): WriteResult
     {
@@ -413,24 +427,6 @@ abstract class AbstractMongoDao<T> implements EntityRepo<T>, DbRefResolver<T>
             $bulk->delete(['_id' => $mid], ['limit' => 1]);
             return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
-    }
-
-    /**
-     * Executes something in the context of the collection.
-     *
-     * Exceptions are caught and translated.
-     *
-     * @param $cb - The closure to execute, takes the entityManager
-     * @return - Whatever the function returns, this method also returns
-     * @throws \Labrys\Db\Exception If a database problem occurs
-     */
-    protected function doExecute<Ta>((function(Manager, string): Ta) $cb) : Ta
-    {
-        try {
-            return $cb($this->manager, $this->collection);
-        } catch (\Exception $e) {
-            throw self::translateException($e);
-        }
     }
 
     /**

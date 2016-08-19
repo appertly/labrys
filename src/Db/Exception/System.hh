@@ -21,7 +21,8 @@ namespace Labrys\Db\Exception;
 
 /**
  * Exception for uncategorized persistence system errors.
+ * @deprecated 0.5.1:0.6.0
  */
-class System extends \RuntimeException implements \Labrys\Db\Exception
+class System extends \Caridea\Dao\Exception\Generic implements \Labrys\Db\Exception
 {
 }

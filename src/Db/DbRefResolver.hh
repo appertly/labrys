@@ -38,7 +38,9 @@ interface DbRefResolver<T>
      * @param $ref - The DBRef to load
      * @return - The loaded entity or `null` if not found
      * @throws \InvalidArgumentException If `$ref` is of an unsupported type
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be retrieved
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function resolve(shape('$ref' => string, '$id' => mixed) $ref): ?T;
 
@@ -48,7 +50,9 @@ interface DbRefResolver<T>
      * @param $refs - The DBRefs to load
      * @return - The loaded entities
      * @throws \InvalidArgumentException If any `$ref`s are of an unsupported type
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be retrieved
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function resolveAll(Traversable<shape('$ref' => string, '$id' => mixed)> $refs): Traversable<T>;
 }

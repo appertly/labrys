@@ -20,13 +20,15 @@
 namespace Labrys\Http;
 
 use HackPack\HackUnit\Contract\Assert;
+use Mockery as M;
 
 class AuthenticatorTest
 {
     <<Test>>
     public async function testRun1(Assert $assert): Awaitable<void>
     {
-        $session = new AuthenticatorTest_FakeSession();
+        $session = M::mock(\Caridea\Session\Session::class);
+        $session->shouldReceive('getValues')->andReturn(new \Caridea\Session\NullMap());
         $service = new \Caridea\Auth\Service($session);
         $object = new Authenticator($service, '/auth/login');
         $next = function ($req, $res) use ($assert) {
@@ -37,12 +39,15 @@ class AuthenticatorTest
         $response = new \Zend\Diactoros\Response();
         $out = $object->__invoke($request, $response, $next);
         $assert->mixed($out)->identicalTo($response);
+        M::close();
     }
 
     <<Test>>
     public async function testRun2(Assert $assert): Awaitable<void>
     {
-        $session = new AuthenticatorTest_FakeSession();
+        $session = M::mock(\Caridea\Session\Session::class);
+        $session->shouldReceive('canResume')->andReturn(true);
+        $session->shouldReceive('getValues')->andReturn(new \Caridea\Session\NullMap());
         $service = new \Caridea\Auth\Service($session);
         $object = new Authenticator($service, '/auth/login');
         $next = function ($req, $res) use ($assert) {
@@ -54,40 +59,6 @@ class AuthenticatorTest
         $out = $object->__invoke($request, $response, $next);
         $assert->string($out->getHeaderLine('Location'))->is('/auth/login?then=/my/place');
         $assert->int($out->getStatusCode())->eq(303);
-    }
-}
-
-class AuthenticatorTest_FakeSession implements \Caridea\Session\Session
-{
-    public function canResume(): bool
-    {
-        return true;
-    }
-    public function clear(): void
-    {
-    }
-    public function destroy(): bool
-    {
-        return true;
-    }
-    public function getValues(string $namespace): \Caridea\Session\Map
-    {
-        return new \Caridea\Session\NullMap();
-    }
-    public function isStarted(): bool
-    {
-        return true;
-    }
-    public function regenerateId(): bool
-    {
-        return true;
-    }
-    public function resume(): bool
-    {
-        return true;
-    }
-    public function start(): bool
-    {
-        return true;
+        M::close();
     }
 }

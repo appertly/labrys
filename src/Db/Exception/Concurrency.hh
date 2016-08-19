@@ -21,7 +21,8 @@ namespace Labrys\Db\Exception;
 
 /**
  * Exception for concurrency issues (like optimistic or pessimistic locking).
+ * @deprecated 0.5.1:0.6.0
  */
-class Concurrency extends \RuntimeException implements \Labrys\Db\Exception
+class Concurrency extends \Caridea\Dao\Exception\Conflicting implements \Labrys\Db\Exception
 {
 }

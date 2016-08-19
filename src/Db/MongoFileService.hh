@@ -49,6 +49,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * @param $file - The uploaded file
      * @param $metadata - Any additional fields to persist. At the very least, try to supply `contentType`.
      * @return - The document ID of the stored file
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function store(\Psr\Http\Message\UploadedFileInterface $file, \ConstMap<string,mixed> $metadata): ObjectID
     {
@@ -68,6 +71,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      *
      * @param $id - The document identifier, either a string or `ObjectID`
      * @return - The readable stream
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function messageStream(mixed $id): StreamInterface
     {
@@ -82,6 +88,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      *
      * @param $id - The document identifier, either a string or `ObjectID`
      * @return - The readable stream
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function resource(mixed $id): resource
     {
@@ -93,6 +102,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      *
      * @param $file - The file
      * @param $stream - The stream
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function stream(\stdClass $file, StreamInterface $stream): void
     {
@@ -107,6 +119,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      *
      * @param $id - The document identifier, either a string or `ObjectID`
      * @return - The stored file
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be retrieved
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function read(mixed $id) : ?\stdClass
     {
@@ -120,6 +135,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      * Deletes a stored file.
      *
      * @param $id - The document identifier, either a string or `ObjectID`
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function delete(mixed $id): void
     {
@@ -134,6 +152,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      *
      * @param $criteria - Field to value pairs
      * @return - The objects found
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be retrieved
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
     public function readAll(\ConstMap<string,mixed> $criteria) : Traversable<\stdClass>
     {
@@ -152,14 +173,14 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
      *
      * @param $cb - The closure to execute, takes the Bucket
      * @return - Whatever the function returns, this method also returns
-     * @throws \Labrys\Db\Exception If a database problem occurs
+     * @throws \Caridea\Dao\Exception If a database problem occurs
      */
     protected function doExecute<Ta>((function(Bucket): Ta) $cb) : Ta
     {
         try {
             return $cb($this->bucket);
         } catch (\Exception $e) {
-            throw self::translateException($e);
+            throw \Caridea\Dao\Exception\Translator\MongoDb::translate($e);
         }
     }
 }

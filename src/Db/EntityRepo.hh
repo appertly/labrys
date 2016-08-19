@@ -29,7 +29,7 @@ interface EntityRepo<T>
      *
      * @return - The entity type
      */
-    public function getType() : string;
+    public function getType(): string;
 
     /**
      * Gets a Map that relates identifier to instance
@@ -37,16 +37,18 @@ interface EntityRepo<T>
      * @param $entities - The entities to "zip"
      * @return - The instances keyed by identifier
      */
-    public function getInstanceMap(Traversable<T> $entities) : ImmMap<string,T>;
+    public function getInstanceMap(Traversable<T> $entities): ImmMap<string,T>;
 
     /**
      * Finds a single record by some arbitrary criteria.
      *
      * @param $criteria Field to value pairs
      * @return - The object found or null if none
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be returned
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function findOne(\ConstMap<string,mixed> $criteria) : ?T;
+    public function findOne(\ConstMap<string,mixed> $criteria): ?T;
 
     /**
      * Finds several records by some arbitrary criteria.
@@ -54,35 +56,42 @@ interface EntityRepo<T>
      * @param $criteria - Field to value pairs
      * @param $pagination - Optional pagination parameters
      * @return - The objects found or null if none
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be returned
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Traversable<T>;
+    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null): Traversable<T>;
 
     /**
      * Gets a single document by ID.
      *
      * @param $id - The document identifier
      * @return - The entity
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be returned
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function findById(mixed $id) : ?T;
+    public function findById(mixed $id): ?T;
 
     /**
      * Gets a single document by ID, throwing an exception if it's not found.
      *
      * @param $id - The document identifier
      * @return - The entity
-     * @throws \Labrys|Db\Exception\Retrieval If the document doesn't exist
-     * @throws \Labrys\Db\Exception\System If any other database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function get(mixed $id) : T;
+    public function get(mixed $id): T;
 
     /**
      * Gets several documents by ID.
      *
      * @param $ids - Array of identifiers
      * @return - The results
-     * @throws \Labrys\Db\Exception\System If a database problem occurs
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be returned
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function getAll(\ConstVector<mixed> $ids) : Traversable<T>;
+    public function getAll(\ConstVector<mixed> $ids): Traversable<T>;
 }

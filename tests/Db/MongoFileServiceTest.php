@@ -20,6 +20,7 @@
 namespace Labrys\Db;
 
 use HackPack\HackUnit\Contract\Assert;
+use Mockery as M;
 
 class MongoFileServiceTest
 {
@@ -34,59 +35,25 @@ class MongoFileServiceTest
     <<Test>>
     public async function testStore(Assert $assert): Awaitable<void>
     {
-        $mockStream = new class implements \Psr\Http\Message\StreamInterface {
-            public function __toString() { return ''; }
-            public function close() {}
-            public function detach() {}
-            public function getSize() {}
-            public function tell() {}
-            public function eof() {}
-            public function isSeekable(){}
-            public function seek($offset, $whence = SEEK_SET){}
-            public function rewind(){}
-            public function isWritable(){}
-            public function write($string){}
-            public function isReadable(){}
-            public function read($length){}
-            public function getContents() {}
-            public function getMetadata($key = null) {
-                if ($key === 'uri') {
-                    return '/tmp/foobar';
-                }
-            }
-        };
+        $mockStream = M::mock(\Psr\Http\Message\StreamInterface::class);
+        $mockStream->shouldReceive('getMetadata')->withArgs(['uri'])->andReturn('/tmp/foobar');
+        $mockStream->shouldReceive('detach')->andReturn(fopen('php://memory', 'r+'));
 
-        $mockFile = new class($mockStream) implements \Psr\Http\Message\UploadedFileInterface {
-            public function __construct(private mixed $stream) {}
-            public function getStream() {
-                return $this->stream;
-            }
-            public function moveTo($targetPath) {}
-            public function getSize() {}
-            public function getError() {}
-            public function getClientFilename() {
-                return 'my_file.txt';
-            }
-            public function getClientMediaType() {
-                return 'text/html';
-            }
-        };
+        $mockFile = M::mock(\Psr\Http\Message\UploadedFileInterface::class);
+        $mockFile->shouldReceive('getStream')->andReturn($mockStream);
+        $mockFile->shouldReceive('getClientFilename')->andReturn('my_file.txt');
+        $mockFile->shouldReceive('getClientMediaType')->andReturn('text/html');
 
         $mockMetaData = Map{"foo" => "bar", 'contentType' => 'text/html'};
 
-        $mockGridFS = new class($assert, $this->mockId) extends \MongoDB\GridFS\Bucket {
-            public function __construct(private Assert $assert, private mixed $id) {}
-            public function uploadFromStream(string $name, ?resource $source, array $data)
-            {
-                $this->assert->string($name)->is('my_file.txt');
-                $this->assert->mixed($data)->looselyEquals(['contentType' => 'text/html', 'metadata' => ['foo' => 'bar', 'contentType' => 'text/html']]);
-                return $this->id;
-            }
-        };
+        $expectedData = ['contentType' => 'text/html', 'metadata' => ['foo' => 'bar', 'contentType' => 'text/html']];
+        $mockGridFS = M::mock(\MongoDB\GridFS\Bucket::class);
+        $mockGridFS->shouldReceive('uploadFromStream')->withArgs(['my_file.txt', M::type('resource'), $expectedData])->andReturn($this->mockId);
 
         $object = new MongoFileService($mockGridFS);
 
         $assert->mixed($object->store($mockFile, $mockMetaData))->identicalTo($this->mockId);
+        M::close();
     }
 
     <<Test>>
@@ -94,20 +61,14 @@ class MongoFileServiceTest
     {
         $mockGridFSFile = new \stdClass();
 
-        $mockGridFS = new class($mockGridFSFile) extends \MongoDB\GridFS\Bucket {
-            public function __construct(private mixed $file) {}
-            public function getCollectionWrapper()
-            {
-                return new class($this->file) {
-                    public function __construct(private mixed $file) {}
-                    public function findFileById($id) {
-                        return $this->file;
-                    }
-                };
-            }
-        };
+        $cw = M::mock(\MongoDB\GridFS\CollectionWrapper::class);
+        $cw->shouldReceive('findFileById')->withArgs([$this->mockId])->andReturn($mockGridFSFile);
+        $mockGridFS = M::mock(\MongoDB\GridFS\Bucket::class);
+        $mockGridFS->shouldReceive('getCollectionWrapper')->andReturn($cw);
 
         $object = new MongoFileService($mockGridFS);
         $assert->mixed($object->read($this->mockId))->identicalTo($mockGridFSFile);
+
+        M::close();
     }
 }

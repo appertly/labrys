@@ -20,6 +20,7 @@
 namespace Labrys\Acl;
 
 use HackPack\HackUnit\Contract\Assert;
+use Mockery as M;
 
 class JobTest
 {
@@ -27,57 +28,41 @@ class JobTest
     public async function testAssert(Assert $assert): Awaitable<void>
     {
         $subject = \Caridea\Acl\Subject::role('user');
-        $aclService = new class($assert, $subject) extends \Caridea\Acl\Service {
-            public $called = false;
-            public function __construct(private Assert $assert, private \Caridea\Acl\Subject $subject)
-            {
-            }
-            public function assert(array $subjects, string $verb, \Caridea\Acl\Target $target): void
-            {
-                $this->assert->string($verb)->is('write');
-                $this->assert->container($subjects)->contains($this->subject);
-                $this->assert->bool(in_array(\Caridea\Acl\Subject::principal('foobar@example.com'), $subjects))->is(true);
-                $this->assert->string($target->getType())->is('foo');
-                $this->assert->string($target->getId())->is('bar');
-                $this->called = true;
-            }
-        };
-        $resolver = new class($subject) implements SubjectResolver {
-            public function __construct(private \Caridea\Acl\Subject $subject) {}
-            public function getSubjects(\Caridea\Auth\Principal $principal): Traversable
-            {
-                return Vector{$this->subject};
-            }
-        };
         $principal = \Caridea\Auth\Principal::get('foobar@example.com', []);
+        $psubject = \Caridea\Acl\Subject::principal('foobar@example.com');
+        $resolver = M::mock(SubjectResolver::class);
+        $resolver->shouldReceive('getSubjects')->withArgs([$principal])->andReturn(Vector{$subject});
+        $target = new \Caridea\Acl\Target('foo', 'bar');
+        $aclService = M::mock(\Caridea\Acl\Service::class);
+        $aclService->shouldReceive('assert')->andReturnUsing(function ($a, $b, $c) use ($assert, $subject, $psubject, $target) {
+            $assert->mixed($c)->looselyEquals($target);
+            $assert->string($b)->is('write');
+            $assert->container($a)->contains($subject);
+            return true;
+        })->once();
         $object = new Gatekeeper($aclService, $principal, [$resolver]);
         $object->assert('write', 'foo', 'bar');
-        $assert->bool($aclService->called)->is(true);
+        M::close();
     }
 
     <<Test>>
     public async function testCan(Assert $assert): Awaitable<void>
     {
-        $subject = \Caridea\Acl\Subject::role('user');
-        $aclService = new class($assert, $subject) extends \Caridea\Acl\Service {
-            public $called = false;
-            public function __construct(private Assert $assert, private \Caridea\Acl\Subject $subject)
-            {
-            }
-            public function can(array $subjects, string $verb, \Caridea\Acl\Target $target): bool
-            {
-                return true;
-            }
-        };
-        $resolver = new class($subject) implements SubjectResolver {
-            public function __construct(private \Caridea\Acl\Subject $subject) {}
-            public function getSubjects(\Caridea\Auth\Principal $principal): Traversable
-            {
-                return Vector{$this->subject};
-            }
-        };
         $principal = \Caridea\Auth\Principal::get('foobar@example.com', []);
+        $subject = \Caridea\Acl\Subject::role('user');
+        $psubject = \Caridea\Acl\Subject::principal($principal->getUsername());
+        $aclService = M::mock(\Caridea\Acl\Service::class);
+        $target = new \Caridea\Acl\Target('foo', 'bar');
+        $aclService->shouldReceive('can')->andReturnUsing(function ($a, $b, $c) use ($assert, $subject, $psubject, $target) {
+            $assert->mixed($c)->looselyEquals($target);
+            $assert->string($b)->is('write');
+            $assert->container($a)->contains($subject);
+            return true;
+        });
+        $resolver = M::mock(SubjectResolver::class);
+        $resolver->shouldReceive('getSubjects')->withArgs([$principal])->andReturn(Vector{$subject});
         $object = new Gatekeeper($aclService, $principal, [$resolver]);
         $assert->bool($object->can('write', 'foo', 'bar'))->is(true);
+        M::close();
     }
 }

@@ -5,14 +5,20 @@
     "keywords": ["hack", "web", "webapp", "web application"],
     "homepage": "https://github.com/appertly/labrys",
     "license": "Apache-2.0",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.5.x-dev"
+        }
+    },
     "require": {
         "hhvm": ">=3.12.0",
         "psr/http-message": "^1.0",
         "psr/log": "^1.0",
         "appertly/ducts": "~0.1",
-        "caridea/acl": "^2.0.0",
+        "caridea/acl": "^2.1.2",
         "caridea/auth": "^2.0.0",
         "caridea/container": "^2.0.0",
+        "caridea/dao": "^2.0.0",
         "caridea/http": "^2.0.0",
         "caridea/validate": "^2.0.0",
         "aura/router": "^3.0",
@@ -20,6 +26,7 @@
     },
     "require-dev": {
         "hackpack/hackunit": "~0.6",
+        "mockery/mockery": "^0.9",
         "hack-psr/psr7-http-message-hhi": "^0.2",
         "libreworks/psr3-log-hhi": "~1.0.0",
         "libreworks/ext-mongodb-hhi": "^1.1.0",

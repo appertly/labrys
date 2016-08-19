@@ -17,12 +17,26 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Db\Exception;
+namespace Labrys\Db\Entity;
 
 /**
- * Exception for referential integrity issues (like duplicate keys).
- * @deprecated 0.5.1:0.6.0
+ * Interface for mutable MongoDB objects.
+ *
+ * @since 0.5.1
  */
-class Integrity extends \Caridea\Dao\Exception\Duplicative implements \Labrys\Db\Exception
+interface Modifiable extends \MongoDB\BSON\Persistable
 {
+    /**
+     * Whether the object has any changes.
+     *
+     * @return - Whether the object has any changes
+     */
+    public function isDirty(): bool;
+
+    /**
+     * Gets the pending changes.
+     *
+     * @return - The pending changes
+     */
+    public function getChanges(): \ConstMap<string,Map<string,mixed>>;
 }
