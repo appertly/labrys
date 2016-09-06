@@ -111,7 +111,7 @@ trait Tracking
         if (!$this->changes->containsKey('$currentDate')) {
             $this->changes['$currentDate'] = Map{};
         }
-        $this->changes['$currentDate'][$field] = 'date';
+        $this->changes['$currentDate'][$field] = true;
         return $this;
     }
 
