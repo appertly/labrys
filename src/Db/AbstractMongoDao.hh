@@ -200,7 +200,7 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
         if (count($fromCache) === count($ids)) {
             return $fromCache;
         } elseif (count($fromCache) > 0) {
-            $mids = $mids->filter($a ==> !array_key_exists((string)$a, $fromCache));
+            $mids = $mids->filter($a ==> !array_key_exists((string)$a, $this->cache));
             return $fromCache->concat(
                 $this->maybeCacheAll($this->findAll(ImmMap{'_id' => ['$in' => $mids->toArray()]}))
             );
