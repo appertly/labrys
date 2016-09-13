@@ -168,4 +168,24 @@ trait Tracking
         $this->changes['$pull'][$field] = $value;
         return $this;
     }
+
+    /**
+     * Takes all the changes from a `Modifiable` and copies them under a field name.
+     *
+     * @param $child - The object containing updates
+     * @param $field - The field name
+     * @return - provides a fluent interface
+     */
+    protected function aggregateChanges(Modifiable $child, string $field): this
+    {
+        foreach ($child->getChanges() as $op => $sets) {
+            if (!$this->changes->containsKey($op)) {
+                $this->changes[$op] = Map{};
+            }
+            foreach ($sets as $k => $v) {
+                $this->changes[$op]["$field.$k"] = $v;
+            }
+        }
+        return $this;
+    }
 }

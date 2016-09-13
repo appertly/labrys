@@ -55,7 +55,7 @@ class Unroutable extends \RuntimeException implements \Labrys\Route\Exception
     public static function fromRoute(\Aura\Router\Route $failedRoute) : Unroutable
     {
         switch ($failedRoute->failedRule) {
-            case Aura\Router\Rule\Allows::class:
+            case \Aura\Router\Rule\Allows::class:
                 $allows = ImmMap{'Allow' => implode(',', $failedRoute->allows)};
                 return new self("Method Not Allowed", 405, null, $allows);
             case \Aura\Router\Rule\Accepts::class:

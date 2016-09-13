@@ -95,17 +95,4 @@ trait MongoHelper
         }
         return $document;
     }
-
-    /**
-     * Translates a Mongo exception.
-     *
-     * @param $e - The exception to translate
-     * @return - The exception to use
-     * @deprecated 0.5.1:0.6.0
-     */
-    <<__Deprecated("Use \Caridea\Dao\Exception\Translator\MongoDb::translate")>>
-    protected static function translateException(\Exception $e): \Exception
-    {
-        return \Caridea\Dao\Exception\Translator\MongoDb::translate($e);
-    }
 }

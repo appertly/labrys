@@ -38,7 +38,7 @@ trait MessageHelper
     protected function getParsedBodyMap(Request $request): Map<string,mixed>
     {
         $body = $request->getParsedBody();
-        return is_array($body) ? new Map($body) : Map{};
+        return $body instanceof KeyedTraversable ? new Map($body) : Map{};
     }
 
     /**

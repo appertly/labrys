@@ -53,6 +53,14 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     /**
      * {@inheritDoc}
      */
+    public function countAll(\ConstMap<string,mixed> $criteria): int
+    {
+        return $this->getDao()->countAll($criteria);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function findOne(\ConstMap<string,mixed> $criteria): ?Ta
     {
         return $this->getDao()->findOne($criteria);
@@ -96,8 +104,9 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     public function getAll(\ConstVector<mixed> $ids): Traversable<Ta>
     {
         $dao = $this->getDao();
+        $all = $dao->getAll($ids);
         $this->gatekeeper->assertAll('read', $dao->getType(), $ids);
-        return $dao->getAll($ids);
+        return $all;
     }
 
     /**
@@ -123,8 +132,9 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     protected function getAndAssert(mixed $id, string $verb): Ta
     {
         $dao = $this->getDao();
+        $entity = $dao->get($id);
         $this->gatekeeper->assert($verb, $dao->getType(), $id);
-        return $dao->get($id);
+        return $entity;
     }
 
     /**

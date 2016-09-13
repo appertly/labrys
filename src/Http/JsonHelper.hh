@@ -20,6 +20,7 @@
 namespace Labrys\Http;
 
 use Psr\Http\Message\ResponseInterface as Response;
+use Caridea\Http\Pagination;
 
 /**
  * A trait that can be used by controllers who need to return typical JSON
@@ -33,10 +34,31 @@ trait JsonHelper
      * @param $payload - The object to serialize
      * @return - The JSON response
      */
-    protected function sendJson(Response $response, mixed $payload) : Response
+    protected function sendJson(Response $response, mixed $payload): Response
     {
         $response->getBody()->write(json_encode($payload));
         return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * Sends a Content-Range header for pagination
+     *
+     * @param $response - The response
+     * @return - The JSON response
+     * @since 0.6.0
+     */
+    protected function sendItems<T>(Response $response, Traversable<T> $items, ?Pagination $pagination = null, ?int $total = null): Response
+    {
+        $items = new Vector($items);
+        $total = $total ?? count($items);
+        $start = $pagination?->getOffset() ?? 0;
+        $max = $pagination?->getMax() ?? 0;
+        // make sure $end is no higher than $total and isn't negative
+        $end = max(min((PHP_INT_MAX - $max < $start ? PHP_INT_MAX : $start + $max), $total) - 1, 0);
+        return $this->sendJson(
+            $response->withHeader('Content-Range', "items $start-$end/$total"),
+            $items
+        );
     }
 
     /**
@@ -47,7 +69,7 @@ trait JsonHelper
      * @param $id - The entity ids
      * @return - The JSON response
      */
-    protected function sendCreated(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
+    protected function sendCreated(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}): Response
     {
         return $this->sendVerb('created', $response, $type, $ids, $extra)
             ->withStatus(201, "Created");
@@ -61,7 +83,7 @@ trait JsonHelper
      * @param $ids - The entity ids
      * @return - The JSON response
      */
-    protected function sendDeleted(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
+    protected function sendDeleted(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}): Response
     {
         return $this->sendVerb('deleted', $response, $type, $ids, $extra);
     }
@@ -75,7 +97,7 @@ trait JsonHelper
      * @param $extra - Any extra data to serialize
      * @return - The JSON response
      */
-    protected function sendUpdated(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
+    protected function sendUpdated(Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}): Response
     {
         return $this->sendVerb('updated', $response, $type, $ids, $extra);
     }
@@ -90,7 +112,7 @@ trait JsonHelper
      * @param $extra - Any extra data to serialize
      * @return - The JSON response
      */
-    protected function sendVerb(string $verb, Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}) : Response
+    protected function sendVerb(string $verb, Response $response, string $type, \ConstVector<string> $ids, \ConstMap<string,mixed> $extra = ImmMap{}): Response
     {
         $send = new Map($extra);
         $send->setAll(Map{

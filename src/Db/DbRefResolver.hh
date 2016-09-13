@@ -20,7 +20,7 @@
 namespace Labrys\Db;
 
 /**
- * Resolves DBRef objects
+ * Resolves DbRef objects
  */
 interface DbRefResolver<T>
 {
@@ -35,24 +35,24 @@ interface DbRefResolver<T>
     /**
      * Resolves a MongoDB DbRef.
      *
-     * @param $ref - The DBRef to load
+     * @param $ref - The DbRef to load
      * @return - The loaded entity or `null` if not found
      * @throws \InvalidArgumentException If `$ref` is of an unsupported type
      * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
      * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be retrieved
      * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function resolve(shape('$ref' => string, '$id' => mixed) $ref): ?T;
+    public function resolve(DbRef $ref): ?T;
 
     /**
      * Resolves a MongoDB DbRef.
      *
-     * @param $refs - The DBRefs to load
+     * @param $refs - The DbRefs to load
      * @return - The loaded entities
      * @throws \InvalidArgumentException If any `$ref`s are of an unsupported type
      * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
      * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be retrieved
      * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function resolveAll(Traversable<shape('$ref' => string, '$id' => mixed)> $refs): Traversable<T>;
+    public function resolveAll(Traversable<DbRef> $refs): Traversable<T>;
 }

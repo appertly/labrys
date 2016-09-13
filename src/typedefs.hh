@@ -17,12 +17,11 @@
  * @copyright 2015-2016 Appertly
  * @license   Apache-2.0
  */
-namespace Labrys\Db\Exception;
+namespace Labrys\Db;
 
 /**
- * Exception for referential integrity issues (like duplicate keys).
- * @deprecated 0.5.1:0.6.0
+ * A pretty typical MongoDB DbRef.
+ *
+ * @since 0.6.0
  */
-class Integrity extends \Caridea\Dao\Exception\Duplicative implements \Labrys\Db\Exception
-{
-}
+type DbRef = shape('$ref' => string, '$id' => mixed);

@@ -96,7 +96,7 @@ class RescuerTest
         $object = new Rescuer(Map{'debug' => true});
         $status = 404;
         $next = function ($req, $res) use ($status) {
-            throw new \Labrys\Db\Exception\Retrieval();
+            throw new \Caridea\Dao\Exception\Unretrievable();
         };
         $server = ['HTTP_ACCEPT' => 'application/json'];
         $request = new \Zend\Diactoros\ServerRequest($server);
@@ -136,7 +136,7 @@ class RescuerTest
         $object = new Rescuer(Map{'debug' => true});
         $status = 409;
         $next = function ($req, $res) use ($status) {
-            throw new \Labrys\Db\Exception\Concurrency();
+            throw new \Caridea\Dao\Exception\Conflicting();
         };
         $server = ['HTTP_ACCEPT' => 'application/json'];
         $request = new \Zend\Diactoros\ServerRequest($server);
@@ -156,7 +156,7 @@ class RescuerTest
         $object = new Rescuer(Map{'debug' => true});
         $status = 409;
         $next = function ($req, $res) use ($status) {
-            throw new \Labrys\Db\Exception\Integrity();
+            throw new \Caridea\Dao\Exception\Duplicative();
         };
         $server = ['HTTP_ACCEPT' => 'application/json'];
         $request = new \Zend\Diactoros\ServerRequest($server);
@@ -197,7 +197,7 @@ class RescuerTest
         $object = new Rescuer(Map{'debug' => true});
         $status = 423;
         $next = function ($req, $res) use ($status) {
-            throw new \Labrys\Db\Exception\Locked();
+            throw new \Caridea\Dao\Exception\Locked();
         };
         $server = ['HTTP_ACCEPT' => 'application/json'];
         $request = new \Zend\Diactoros\ServerRequest($server);

@@ -7,7 +7,7 @@
     "license": "Apache-2.0",
     "extra": {
         "branch-alias": {
-            "dev-master": "0.5.x-dev"
+            "dev-master": "0.6.x-dev"
         }
     },
     "require": {
@@ -42,7 +42,10 @@
             "xhp"
         ],
         "psr-4": {
-          "Labrys\\": "src/"
-        }
+            "Labrys\\": "src/"
+        },
+        "files": [
+            "src/typedefs.hh"
+        ]
     }
 }

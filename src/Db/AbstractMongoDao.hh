@@ -60,7 +60,7 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
     private Map<string,T> $cache = Map{};
 
     /**
-     * Creates a new AbstractMongoService.
+     * Creates a new AbstractMongoDao.
      *
      * Current accepted configuration values:
      * * `versioned` – Whether to enforce optimistic locking via a version field (default: true)
@@ -76,13 +76,11 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
      *
      * @param $manager - The MongoDB Manager
      * @param $collection - The collection to wrap
-     * @param $validator - Optional validator
      * @param $options - Map of configuration values
      */
     public function __construct(
         Manager $manager,
         string $collection,
-        protected ?\Caridea\Validate\Validator $validator = null,
         ?\ConstMap<string,mixed> $options = null,
     ) {
         parent::__construct($manager, $collection);
@@ -108,6 +106,31 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
                 $this->writeConcern = $wc;
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function countAll(\ConstMap<string,mixed> $criteria): int
+    {
+        $result = $this->doExecute(function (Manager $m, string $c) use ($criteria) {
+            list($db, $coll) = explode('.', $c, 2);
+            $command = new \MongoDB\Driver\Command([
+                'count' => $coll,
+                'query' => $criteria->toArray(),
+            ]);
+            $cursor = $m->executeCommand($db, $command, $this->readPreference);
+            $cursor->setTypeMap(['root' => 'array']);
+            $resa = $cursor->toArray();
+            return count($resa) > 0 ? current($resa) : null;
+        });
+
+        // Older server versions may return a float
+        if (!is_array($result) || !array_key_exists('n', $result) || !(is_int($result['n']) || is_float($result['n']))) {
+            throw new \Caridea\Dao\Exception\Unretrievable('count command did not return a numeric "n" value');
+        }
+
+        return (int) $result['n'];
     }
 
     /**
@@ -232,7 +255,7 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
     /**
      * {@inheritDoc}
      */
-    public function resolve(shape('$ref' => string, '$id' => mixed) $ref): ?T
+    public function resolve(DbRef $ref): ?T
     {
         if (!$this->isResolvable($ref['$ref'])) {
             throw new \InvalidArgumentException("Unsupported reference type: " . $ref['$ref']);
@@ -243,7 +266,7 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
     /**
      * {@inheritDoc}
      */
-    public function resolveAll(Traversable<shape('$ref' => string, '$id' => mixed)> $refs): Traversable<T>
+    public function resolveAll(Traversable<DbRef> $refs): Traversable<T>
     {
         $types = Set{};
         $ids = Vector{};
@@ -264,7 +287,6 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
      *
      * @param $record - The record to insert, ready to go
      * @return - Whatever MongoDB returns
-     * @throws \Caridea\Validate\Exception\Invalid if validation fails
      * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
      * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
      * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
@@ -273,10 +295,6 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
     {
         $record = $record->toArray();
 
-        // check validation
-        if ($this->validator) {
-            $this->validator->assert($record);
-        }
         if ($this->versioned) {
             $record['version'] = 0;
         }
@@ -293,7 +311,6 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
      *
      * @param $record - The document to insert, ready to go
      * @return - Whatever MongoDB returns
-     * @throws \Caridea\Validate\Exception\Invalid if validation fails
      * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
      * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
      * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
@@ -301,10 +318,6 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
      */
     protected function doPersist(\MongoDB\BSON\Persistable $record): WriteResult
     {
-        // check validation
-        if ($this->validator) {
-            $this->validator->assert($record->bsonSerialize());
-        }
         return $this->doExecute(function (Manager $m, string $c) use ($record) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->insert($record);
@@ -315,31 +328,33 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
     /**
      * Updates a record.
      *
-     * You should check optimistic lock version *before* calling this method.
-     *
      * @param $entity - The entity to update
+     * @param $version - Optional version for optimistic lock checking
      * @return - Whatever MongoDB returns
-     * @throws \Caridea\Validate\Exception\Invalid if validation fails
      * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
-     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
+     * @throws \Caridea\Dao\Exception\Conflicting If optimistic/pessimistic lock fails
      * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
      * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      * @since 0.5.1
      */
-    protected function doUpdateModifiable(Entity\Modifiable $entity): ?WriteResult
+    protected function doUpdateModifiable(Entity\Modifiable $entity, ?int $version = null): ?WriteResult
     {
         if (!$entity->isDirty()) {
             return null;
         }
         $mid = Getter::getId($entity);
-        // check validation
-        if ($this->validator) {
-            $this->validator->assert($entity->bsonSerialize());
-        }
         $ops = $entity->getChanges()->map($a ==> $a->toArray())->toArray();
+
         if ($this->versioned) {
+            if ($version !== null) {
+                $orig = $this->findOne(Map{'_id' => $mid});
+                if ($version < (int) Getter::get($orig, 'version')) {
+                    throw new \Caridea\Dao\Exception\Conflicting("Document version conflict");
+                }
+            }
             $ops['$inc']['version'] = 1;
         }
+
         $this->cache->removeKey((string)$mid);
         return $this->doExecute(function (Manager $m, string $c) use ($mid, $ops) {
             $bulk = new \MongoDB\Driver\BulkWrite();
@@ -352,52 +367,30 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
      * Updates a record.
      *
      * @param \MongoDB\BSON\ObjectID|string $id The document identifier, either a string or `ObjectID`
-     * @param $record - The record to update, ready to go
+     * @param $operations - The operations to send to MongoDB
+     * @param $version - Optional version for optimistic lock checking
      * @return - Whatever MongoDB returns
-     * @throws \Caridea\Validate\Exception\Invalid if validation fails
      * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
      * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
      * @throws \Caridea\Dao\Exception\Conflicting If optimistic/pessimistic lock fails
      * @throws \Caridea\Dao\Exception\Violating If a constraint is violated
      * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    protected function doUpdate(mixed $id, \ConstMap<string,mixed> $record, ?\ConstMap<string,mixed> $extraOps = null): WriteResult
+    protected function doUpdate(mixed $id, \ConstMap<string,Map<string,mixed>> $operations, ?int $version = null): WriteResult
     {
-        $record = $record->toArray();
-
         // ensure record exists
         $mid = $this->toId($id);
         $orig = $this->get($id);
-
-        $ops = [];
-        if ($extraOps) {
-            foreach ($extraOps as $k => $v) {
-                $ops[$k] = $v;
-            }
-        }
+        $ops = $operations->map($a ==> $a->toArray())->toArray();
 
         // check optimistic locking
         if ($this->versioned) {
-            if (array_key_exists('version', $record)) {
-                $origVersion = (int)Getter::get($orig, 'version');
-                if ($origVersion > $record['version']) {
+            if ($version !== null) {
+                if ($version < (int) Getter::get($orig, 'version')) {
                     throw new \Caridea\Dao\Exception\Conflicting("Document version conflict");
                 }
-                unset($record['version']);
             }
-            $ops['$inc'] = ['version' => 1];
-        }
-        if (count($record) > 0) {
-            $ops['$set'] = $record;
-        }
-
-        // check validation
-        if ($this->validator) {
-            if ($orig instanceof KeyedContainer) {
-                $this->validator->assert(array_merge($orig, $record));
-            } elseif ($orig instanceof \MongoDB\BSON\Persistable) {
-                $this->validator->assert(array_merge($orig->bsonSerialize(), $record));
-            }
+            $ops['$inc']['version'] = 1;
         }
 
         // do update operation
@@ -438,7 +431,7 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
     protected function maybeCache(?T $entity) : ?T
     {
         if ($this->caching && $entity !== null) {
-            $id = (string)Getter::getId($entity);
+            $id = (string) Getter::getId($entity);
             if (!$this->cache->containsKey($id)) {
                 $this->cache[$id] = $entity;
             }
@@ -458,7 +451,7 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
             $results = $entities->toArray();
             foreach ($results as $entity) {
                  if ($entity !== null) {
-                    $id = (string)Getter::getId($entity);
+                    $id = (string) Getter::getId($entity);
                     if (!$this->cache->containsKey($id)) {
                         $this->cache[$id] = $entity;
                     }

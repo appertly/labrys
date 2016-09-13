@@ -51,6 +51,18 @@ interface EntityRepo<T>
     public function findOne(\ConstMap<string,mixed> $criteria): ?T;
 
     /**
+     * Counts several records by some arbitrary criteria.
+     *
+     * @param $criteria - Field to value pairs
+     * @return - The count of the documents
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be returned
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
+     * @since 0.6.0
+     */
+    public function countAll(\ConstMap<string,mixed> $criteria): int;
+
+    /**
      * Finds several records by some arbitrary criteria.
      *
      * @param $criteria - Field to value pairs
