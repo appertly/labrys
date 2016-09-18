@@ -2,6 +2,9 @@
 
 This is a library that helps you write web applications in Hack.
 
+[![Packagist](https://img.shields.io/packagist/v/appertly/labrys.svg)](https://packagist.org/packages/appertly/labrys)
+[![Build Status](https://travis-ci.org/appertly/labrys.svg)](https://travis-ci.org/appertly/labrys)
+
 ## Installation
 
 You can install this library using Composer:
