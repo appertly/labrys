@@ -24,8 +24,10 @@ use Axe\Page;
 /**
  * Creates Views and broadcasts the render event.
  */
-class Service
+class Service implements \Caridea\Container\ContainerAware
 {
+    use \Caridea\Container\ContainerSetter;
+
     /**
      * The page
      */
@@ -41,8 +43,9 @@ class Service
      *
      * @param $container - The dependency injection container
      */
-    public function __construct(private \Caridea\Container\Container $container)
+    public function __construct(?\Caridea\Container\Container $container)
     {
+        $this->container = $container ?? new \Caridea\Container\EmptyContainer();
     }
 
     /**
@@ -71,6 +74,7 @@ class Service
         return await \HH\Asio\v(
             array_map(
                 (PageVisitor $v) ==> $v->visit($page),
+                /* HH_IGNORE_ERROR[4064]: This is never null */
                 $this->container->getByType(PageVisitor::class)
             )
         );
@@ -87,8 +91,10 @@ class Service
         return sprintf(
         /* HH_FIXME[4110]: HHVM is weird with this method */
         /* HH_FIXME[4027]: HHVM is weird with this method */
+        /* HH_IGNORE_ERROR[4064]: This is never null */
             $this->container->get('web.ui.title.template'),
             $title,
+        /* HH_IGNORE_ERROR[4064]: This is never null */
             $this->container->get('system.name')
         );
     }
@@ -102,11 +108,13 @@ class Service
      */
     public function setFlashMessage(string $name, string $value, bool $current = false): void
     {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $session = $this->container->getFirst(\Caridea\Session\Session::class);
         if ($session === null) {
             throw new \UnexpectedValueException("No Session Manager found");
         }
         $session->resume() || $session->start();
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $flash = $this->container->getFirst(\Caridea\Session\FlashPlugin::class);
         if ($flash === null) {
             throw new \UnexpectedValueException("No Flash Plugin found");
@@ -123,11 +131,13 @@ class Service
      */
     public function clearFlashMessages(bool $current = false): void
     {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $session = $this->container->getFirst(\Caridea\Session\Session::class);
         if ($session === null) {
             throw new \UnexpectedValueException("No Session Manager found");
         }
         $session->resume() || $session->start();
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $flash = $this->container->getFirst(\Caridea\Session\FlashPlugin::class);
         if ($flash === null) {
             throw new \UnexpectedValueException("No Flash Plugin found");
@@ -140,11 +150,13 @@ class Service
      */
     public function keepFlashMessages(): void
     {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $session = $this->container->getFirst(\Caridea\Session\Session::class);
         if ($session === null) {
             throw new \UnexpectedValueException("No Session Manager found");
         }
         $session->resume() || $session->start();
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $flash = $this->container->getFirst(\Caridea\Session\FlashPlugin::class);
         if ($flash === null) {
             throw new \UnexpectedValueException("No Flash Plugin found");
@@ -159,6 +171,7 @@ class Service
      */
     public function getFlashMessages(): \ConstMap<string,ImmVector<string>>
     {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $flash = $this->container->getFirst(\Caridea\Session\FlashPlugin::class);
         if ($flash === null) {
             throw new \UnexpectedValueException("No Flash Plugin found");
@@ -191,6 +204,7 @@ class Service
      */
     public function getBlocks(string $region): \ConstVector<Block>
     {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         $blocks = new Vector($this->container->getByType(Block::class));
         $blocks = $blocks->filter((Block $b) ==> $region === $b->getRegion());
         return $blocks->toImmVector();
@@ -204,6 +218,7 @@ class Service
      */
     public function getDbRefResolvers(): \ConstVector<\Labrys\Db\DbRefResolver>
     {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         return new ImmVector($this->container->getByType(\Labrys\Db\DbRefResolver::class));
     }
 
@@ -215,6 +230,7 @@ class Service
      */
     public function getEntityLinkers(): \ConstVector<EntityLinker>
     {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
         return new ImmVector($this->container->getByType(EntityLinker::class));
     }
 }

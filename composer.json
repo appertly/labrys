@@ -14,14 +14,14 @@
         "hhvm": ">=3.12.0",
         "psr/http-message": "^1.0",
         "psr/log": "^1.0",
-        "appertly/ducts": "~0.1",
         "caridea/acl": "^2.1.2",
         "caridea/auth": "^2.0.0",
-        "caridea/container": "^2.0.0",
+        "caridea/container": "^2.2.0",
         "caridea/dao": "^2.0.0",
         "caridea/http": "^2.0.0",
         "caridea/validate": "^2.0.0",
         "aura/router": "^3.0",
+        "appertly/ducts": "~0.1",
         "appertly/axe": "~0.1"
     },
     "require-dev": {

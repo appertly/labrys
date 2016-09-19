@@ -25,14 +25,17 @@ use MongoDB\Driver\Manager;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Driver\WriteConcern;
 use MongoDB\Driver\WriteResult;
+use Caridea\Dao\MongoDb as MongoDbDao;
+use Caridea\Event\PublisherAware;
 use Labrys\Getter;
 
 /**
  * Abstract MongoDB DAO Service
  */
-abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements EntityRepo<T>, DbRefResolver<T>
+abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, DbRefResolver<T>, PublisherAware
 {
     use MongoHelper;
+    use \Caridea\Dao\Event\Publishing;
 
     /**
      * Whether to enforce optimistic locking
@@ -106,6 +109,7 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
                 $this->writeConcern = $wc;
             }
         }
+        $this->publisher = new \Caridea\Event\NullPublisher();
     }
 
     /**
@@ -318,11 +322,14 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
      */
     protected function doPersist(\MongoDB\BSON\Persistable $record): WriteResult
     {
-        return $this->doExecute(function (Manager $m, string $c) use ($record) {
+        $this->preInsert($record);
+        $wr = $this->doExecute(function (Manager $m, string $c) use ($record) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->insert($record);
             return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
+        $this->postInsert($record);
+        return $wr;
     }
 
     /**
@@ -355,12 +362,15 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
             $ops['$inc']['version'] = 1;
         }
 
+        $this->preUpdate($entity);
         $this->cache->removeKey((string)$mid);
-        return $this->doExecute(function (Manager $m, string $c) use ($mid, $ops) {
+        $wr = $this->doExecute(function (Manager $m, string $c) use ($mid, $ops) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->update(['_id' => $mid], $ops);
             return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
+        $this->postUpdate($entity);
+        return $wr;
     }
 
     /**
@@ -414,12 +424,16 @@ abstract class AbstractMongoDao<T> extends \Caridea\Dao\MongoDb implements Entit
     protected function doDelete(mixed $id): WriteResult
     {
         $mid = $this->toId($id);
+        $entity = $this->get($mid);
         $this->cache->removeKey((string)$id);
-        return $this->doExecute(function (Manager $m, string $c) use ($mid) {
+        $this->preDelete($entity);
+        $wr = $this->doExecute(function (Manager $m, string $c) use ($mid) {
             $bulk = new \MongoDB\Driver\BulkWrite();
             $bulk->delete(['_id' => $mid], ['limit' => 1]);
             return $m->executeBulkWrite($c, $bulk, $this->writeConcern);
         });
+        $this->postDelete($entity);
+        return $wr;
     }
 
     /**
