@@ -78,8 +78,9 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
     public function messageStream(mixed $id): StreamInterface
     {
         $file = $this->read($id);
+        $collectionWrapper = $this->getCollectionWrapper($this->bucket);
         return new MongoDownloadStream(
-            new \MongoDB\GridFS\ReadableStream($this->bucket->getCollectionWrapper(), $file)
+            new \MongoDB\GridFS\ReadableStream($collectionWrapper, $file)
         );
     }
 
@@ -127,7 +128,7 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
     {
         $mid = $this->toId($id);
         return $this->doExecute(function (Bucket $bucket) use ($mid) {
-            return $bucket->getCollectionWrapper()->findFileById($mid);
+            return $this->getCollectionWrapper($bucket)->findFileById($mid);
         });
     }
 
@@ -182,5 +183,13 @@ class MongoFileService implements \Labrys\Io\FileService<ObjectID,\stdClass>
         } catch (\Exception $e) {
             throw \Caridea\Dao\Exception\Translator\MongoDb::translate($e);
         }
+    }
+
+    private function getCollectionWrapper(Bucket $b): \MongoDB\GridFS\CollectionWrapper
+    {
+        $rc = new \ReflectionObject($b);
+        $p = $rc->getProperty('collectionWrapper');
+        $p->setAccessible(true);
+        return $p->getValue($b);
     }
 }
