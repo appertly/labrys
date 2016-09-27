@@ -64,7 +64,7 @@ class MongoFileServiceTest
         $cw = M::mock(\MongoDB\GridFS\CollectionWrapper::class);
         $cw->shouldReceive('findFileById')->withArgs([$this->mockId])->andReturn($mockGridFSFile);
         $mockGridFS = M::mock(\MongoDB\GridFS\Bucket::class);
-        $mockGridFS->shouldReceive('getCollectionWrapper')->andReturn($cw);
+        $mockGridFS->collectionWrapper = $cw;
 
         $object = new MongoFileService($mockGridFS);
         $assert->mixed($object->read($this->mockId))->identicalTo($mockGridFSFile);

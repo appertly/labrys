@@ -20,6 +20,7 @@
 namespace Labrys\View;
 
 use Axe\Page;
+use Caridea\Container\EmptyContainer;
 
 /**
  * Creates Views and broadcasts the render event.
@@ -45,7 +46,7 @@ class Service implements \Caridea\Container\ContainerAware
      */
     public function __construct(?\Caridea\Container\Container $container)
     {
-        $this->container = $container ?? new \Caridea\Container\EmptyContainer();
+        $this->container = $container ?? new EmptyContainer();
     }
 
     /**
@@ -197,6 +198,19 @@ class Service implements \Caridea\Container\ContainerAware
     }
 
     /**
+     * Gets the last request that the Dispatcher sent to a controller.
+     *
+     * @return - The last dispatched request, or `null`
+     * @since 0.6.3
+     */
+    public function getDispatchedRequest(): ?\Psr\Http\Message\ServerRequestInterface
+    {
+        $c = $this->container ?? new EmptyContainer();
+        $d = Vector::fromItems($c->getByType(\Labrys\Route\Dispatcher::class))->firstValue();
+        return $d?->getLastDispatchedRequest();
+    }
+
+    /**
      * Gets all blocks registered for a given region
      *
      * @param $region - The region to search
@@ -204,8 +218,8 @@ class Service implements \Caridea\Container\ContainerAware
      */
     public function getBlocks(string $region): \ConstVector<Block>
     {
-        /* HH_IGNORE_ERROR[4064]: This is never null */
-        $blocks = new Vector($this->container->getByType(Block::class));
+        $c = $this->container ?? new EmptyContainer();
+        $blocks = new Vector($c->getByType(Block::class));
         $blocks = $blocks->filter((Block $b) ==> $region === $b->getRegion());
         return $blocks->toImmVector();
     }

@@ -36,6 +36,8 @@ use Caridea\Container\Container as CContainer;
  */
 class Dispatcher implements Plugin
 {
+    private ?Request $lastDispatchedRequest;
+
     /**
      * Creates a new Dispatcher plugin
      *
@@ -54,6 +56,17 @@ class Dispatcher implements Plugin
     public function getPriority()
     {
         return PHP_INT_MIN;
+    }
+
+    /**
+     * Gets the last request that was passed to the `__invoke` method.
+     *
+     * @return - The last request or `null`
+     * @since 0.6.3
+     */
+    public function getLastDispatchedRequest(): ?Request
+    {
+        return $this->lastDispatchedRequest;
     }
 
     /**
@@ -77,6 +90,7 @@ class Dispatcher implements Plugin
             $request = $request->withAttribute($k, $v);
         }
         $request = $request->withAttribute('_route', $route);
+        $this->lastDispatchedRequest = $request;
         $handler = $route->handler;
         if ($handler instanceof \Closure) {
             $response = $handler($request, $response);

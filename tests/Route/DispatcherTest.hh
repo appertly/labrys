@@ -84,6 +84,9 @@ class DispatcherTest
         $response = new \Zend\Diactoros\Response();
 
         $res = $object->__invoke($request, $response, ($req, $res) ==> $res);
+        $req2 = $object->getLastDispatchedRequest();
+        $assert->mixed($req2)->isTypeOf(\Zend\Diactoros\ServerRequest::class);
+        $assert->mixed($req2?->getUri())->identicalTo($uri);
         $assert->string($res->getHeaderLine('X-Unit-Test'))->is('foo');
     }
 
