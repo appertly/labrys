@@ -67,12 +67,15 @@ interface EntityRepo<T>
      *
      * @param $criteria - Field to value pairs
      * @param $pagination - Optional pagination parameters
+     * @param $totalCount - Return a `CursorSubset` that includes the total
+     *        number of records. This is only done if `$pagination` is not using
+     *        the defaults.
      * @return - The objects found or null if none
      * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
      * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be returned
      * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
      */
-    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null): Traversable<T>;
+    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null, ?bool $totalCount = false): Traversable<T>;
 
     /**
      * Gets a single document by ID.

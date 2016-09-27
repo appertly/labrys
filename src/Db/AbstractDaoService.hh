@@ -69,9 +69,9 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     /**
      * {@inheritDoc}
      */
-    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null): Traversable<Ta>
+    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null, ?bool $totalCount = false): Traversable<Ta>
     {
-        return $this->getDao()->findAll($criteria, $pagination);
+        return $this->getDao()->findAll($criteria, $pagination, $totalCount);
     }
 
     /**

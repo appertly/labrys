@@ -80,4 +80,15 @@ class JsonHelperTest
         $assert->string((string)$output->getBody())->is(json_encode($items));
         $assert->string($output->getHeaderLine('Content-Range'))->is('items 0-0/0');
     }
+
+    <<Test>>
+    public async function testSendItems6(Assert $assert): Awaitable<void>
+    {
+        $response = new \Zend\Diactoros\Response();
+        $pagination = new \Caridea\Http\Pagination(3, 0);
+        $items = new \Labrys\Db\CursorSubset(Vector{'a', 'b', 'c'}, 9);
+        $output = $this->sendItems($response, $items, $pagination, 5);
+        $assert->string((string)$output->getBody())->is(json_encode($items));
+        $assert->string($output->getHeaderLine('Content-Range'))->is('items 0-2/9');
+    }
 }

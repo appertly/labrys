@@ -156,12 +156,15 @@ abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, 
     /**
      * {@inheritDoc}
      */
-    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null) : Cursor<T>
+    public function findAll(\ConstMap<string,mixed> $criteria, ?\Caridea\Http\Pagination $pagination = null, ?bool $totalCount = false): \Iterator<T>
     {
-        /* HH_IGNORE_ERROR[4101]: Cursor will return whatever the user specifies in the typeMap */
-        return $this->doExecute(function (Manager $m, string $c) use ($criteria, $pagination) {
+        $total = null;
+        if ($totalCount === true && $pagination !== null && ($pagination->getMax() != PHP_INT_MAX || $pagination->getOffset() > 0)) {
+            $total = $this->countAll($criteria);
+        }
+        $results = $this->doExecute(function (Manager $m, string $c) use ($criteria, $pagination) {
             $qo = [];
-            if ($pagination) {
+            if ($pagination !== null) {
                 if ($pagination->getMax() != PHP_INT_MAX) {
                     $qo['limit'] = $pagination->getMax();
                 }
@@ -179,12 +182,15 @@ abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, 
             $res->setTypeMap($this->typeMap);
             return $res;
         });
+        /* HH_IGNORE_ERROR[4101]: Cursor will return whatever the user specifies in the typeMap */
+        /* HH_IGNORE_ERROR[4029]: Also same thing here */
+        return $total === null ? $results : new CursorSubset($results, $total);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function findById(mixed $id) : ?T
+    public function findById(mixed $id): ?T
     {
         try {
             $mid = $this->toId($id);
@@ -201,7 +207,7 @@ abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, 
     /**
      * {@inheritDoc}
      */
-    public function get(mixed $id) : T
+    public function get(mixed $id): T
     {
         return $this->ensure($id, $this->findById($id));
     }
@@ -209,7 +215,7 @@ abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, 
     /**
      * {@inheritDoc}
      */
-    public function getAll(\ConstVector<mixed> $ids) : Traversable<T>
+    public function getAll(\ConstVector<mixed> $ids): Traversable<T>
     {
         if ($ids->isEmpty()) {
             return ImmVector{};
@@ -459,10 +465,11 @@ abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, 
      * @param $entities - The entities to possibly cache
      * @return - The same entities that came in
      */
-    protected function maybeCacheAll(Cursor<T> $entities) : Traversable<T>
+    protected function maybeCacheAll(\Iterator<T> $entities): Traversable<T>
     {
         if ($this->caching) {
-            $results = $entities->toArray();
+            $results = $entities instanceof \MongoDB\Driver\Cursor ?
+                $entities->toArray() : iterator_to_array($entities, false);
             foreach ($results as $entity) {
                  if ($entity !== null) {
                     $id = (string) Getter::getId($entity);

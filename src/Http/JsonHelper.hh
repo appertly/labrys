@@ -49,8 +49,13 @@ trait JsonHelper
      */
     protected function sendItems<T>(Response $response, Traversable<T> $items, ?Pagination $pagination = null, ?int $total = null): Response
     {
-        $items = new Vector($items);
-        $total = $total ?? count($items);
+        if ($items instanceof \Labrys\Db\CursorSubset) {
+            $total = $items->getTotal();
+            $items = new Vector($items);
+        } else {
+            $items = new Vector($items);
+            $total = $total ?? count($items);
+        }
         $start = $pagination?->getOffset() ?? 0;
         $max = $pagination?->getMax() ?? 0;
         // make sure $end is no higher than $total and isn't negative
