@@ -247,4 +247,38 @@ class Service implements \Caridea\Container\ContainerAware
         /* HH_IGNORE_ERROR[4064]: This is never null */
         return new ImmVector($this->container->getByType(EntityLinker::class));
     }
+
+    /**
+     * Gets the CSRF token.
+     *
+     * @return - The CSRF token or `null`
+     * @throws \UnexpectedValueException if the plugin wasn't in the container
+     * @since 0.6.5
+     */
+    public function getCsrfToken(): ?string
+    {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
+        $plugin = $this->container->getFirst(\Caridea\Session\CsrfPlugin::class);
+        if ($plugin === null) {
+            throw new \UnexpectedValueException("No CSRF Plugin found");
+        }
+        return $plugin->getValue();
+    }
+
+    /**
+     * Checks to see if the provided token matches the session CSRF token.
+     *
+     * @return - whether the provided token matches
+     * @throws \UnexpectedValueException if the plugin wasn't in the container
+     * @since 0.6.5
+     */
+    public function isCsrfValid(string $token): bool
+    {
+        /* HH_IGNORE_ERROR[4064]: This is never null */
+        $plugin = $this->container->getFirst(\Caridea\Session\CsrfPlugin::class);
+        if ($plugin === null) {
+            throw new \UnexpectedValueException("No CSRF Plugin found");
+        }
+        return $plugin->isValid($token);
+    }
 }
