@@ -81,8 +81,12 @@ class SeaSurfer implements \Labrys\Route\Plugin
     {
         if ($this->methods->contains($request->getMethod())) {
             try {
-                $this->verifyOrigin($request);
-                $this->verifyToken($request);
+                $principal = $request->getAttribute('principal');
+                invariant($principal instanceof \Caridea\Auth\Principal, "Request attribute 'principal' must be a Principal");
+                if (!$principal->isAnonymous()) {
+                    $this->verifyOrigin($request);
+                    $this->verifyToken($request);
+                }
             } catch (\OutOfBoundsException $e) {
                 $this->errorLogger->log($e);
                 $response->getBody()->write($e->getMessage());
@@ -114,7 +118,12 @@ class SeaSurfer implements \Labrys\Route\Plugin
                 $hostname = $forwardedHost;
             }
         }
-        if ($source && strcasecmp(parse_url($source, PHP_URL_HOST) ?? '', $hostname) !== 0) {
+        $sourceUrl = parse_url($source);
+        $sourceHost = $source ? $sourceUrl['host'] : '';
+        if ($source && strpos($hostname, ':') !== false) {
+            $sourceHost .= ':' . $sourceUrl['port'];
+        }
+        if ($source && strcasecmp($sourceHost, $hostname) !== 0) {
             throw new \UnexpectedValueException("CSRF: Unauthenticated session");
         }
     }

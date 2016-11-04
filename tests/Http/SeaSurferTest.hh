@@ -57,6 +57,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('POST')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Referer', 'https://example.com/test')
             ->withParsedBody(['csrfToken' => $token]);
         $response = new \Zend\Diactoros\Response();
@@ -81,8 +82,33 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('POST')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Referer', 'https://example.com/test')
             ->withHeader('X-Requested-With', 'XMLHttpRequest');
+        $response = new \Zend\Diactoros\Response();
+        $out = $object->__invoke($request, $response, $next);
+        $assert->mixed($out)->isTypeOf(\Zend\Diactoros\Response::class);
+        $assert->int($out->getStatusCode())->eq(200);
+        $assert->string($out->getReasonPhrase())->is('OK');
+        M::close();
+    }
+
+    <<Test>>
+    public async function testRun11(Assert $assert): Awaitable<void>
+    {
+        $token = 'foobarbazbiz';
+        $plugin = M::mock(\Caridea\Session\CsrfPlugin::class);
+        $plugin->shouldNotReceive('isValid');
+        $errorLogger = M::mock(\Labrys\ErrorLogger::class);
+        $errorLogger->shouldNotReceive('log');
+        $object = new SeaSurfer($plugin, $errorLogger, 'csrfToken', 'example.com');
+        $next = function ($req, $res) use ($assert) {
+            return $res;
+        };
+        $request = new \Zend\Diactoros\ServerRequest();
+        $request = $request->withMethod('POST')
+            ->withAttribute('principal', \Caridea\Auth\Principal::getAnonymous())
+            ->withHeader('Referer', 'https://example.com/test');
         $response = new \Zend\Diactoros\Response();
         $out = $object->__invoke($request, $response, $next);
         $assert->mixed($out)->isTypeOf(\Zend\Diactoros\Response::class);
@@ -105,6 +131,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('POST')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Referer', 'https://example.com/test')
             ->withParsedBody([]);
         $response = new \Zend\Diactoros\Response();
@@ -128,6 +155,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('PUT')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Referer', 'https://example.net/test');
         $response = new \Zend\Diactoros\Response();
         $out = $object->__invoke($request, $response, $next);
@@ -150,6 +178,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('PUT')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Host', 'example.com')
             ->withHeader('Referer', 'https://example.net/test');
         $response = new \Zend\Diactoros\Response();
@@ -173,6 +202,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('PUT')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Host', 'example.org')
             ->withHeader('X-Forwarded-Host', 'example.com')
             ->withHeader('Referer', 'https://example.net/test');
@@ -198,6 +228,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('PUT')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Host', 'example.org')
             ->withHeader('X-Forwarded-Host', 'example.com')
             ->withHeader('Referer', 'https://example.com/test')
@@ -222,7 +253,8 @@ class SeaSurferTest
             return $res;
         };
         $request = new \Zend\Diactoros\ServerRequest();
-        $request = $request->withMethod('DELETE');
+        $request = $request->withMethod('DELETE')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []));
         $response = new \Zend\Diactoros\Response();
         $out = $object->__invoke($request, $response, $next);
         $assert->mixed($out)->isTypeOf(\Zend\Diactoros\Response::class);
@@ -245,6 +277,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('DELETE')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withParsedBody(['csrfToken' => $token]);
         $response = new \Zend\Diactoros\Response();
         $out = $object->__invoke($request, $response, $next);
@@ -268,6 +301,7 @@ class SeaSurferTest
         };
         $request = new \Zend\Diactoros\ServerRequest();
         $request = $request->withMethod('POST')
+            ->withAttribute('principal', \Caridea\Auth\Principal::get('foobar', []))
             ->withHeader('Referer', 'https://example.com/test')
             ->withParsedBody(['csrfToken' => $token]);
         $response = new \Zend\Diactoros\Response();
