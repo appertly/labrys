@@ -68,6 +68,30 @@ class SeaSurferTest
     }
 
     <<Test>>
+    public async function testRun10(Assert $assert): Awaitable<void>
+    {
+        $token = 'foobarbazbiz';
+        $plugin = M::mock(\Caridea\Session\CsrfPlugin::class);
+        $plugin->shouldNotReceive('isValid');
+        $errorLogger = M::mock(\Labrys\ErrorLogger::class);
+        $errorLogger->shouldNotReceive('log');
+        $object = new SeaSurfer($plugin, $errorLogger, 'csrfToken', 'example.com');
+        $next = function ($req, $res) use ($assert) {
+            return $res;
+        };
+        $request = new \Zend\Diactoros\ServerRequest();
+        $request = $request->withMethod('POST')
+            ->withHeader('Referer', 'https://example.com/test')
+            ->withHeader('X-Requested-With', 'XMLHttpRequest');
+        $response = new \Zend\Diactoros\Response();
+        $out = $object->__invoke($request, $response, $next);
+        $assert->mixed($out)->isTypeOf(\Zend\Diactoros\Response::class);
+        $assert->int($out->getStatusCode())->eq(200);
+        $assert->string($out->getReasonPhrase())->is('OK');
+        M::close();
+    }
+
+    <<Test>>
     public async function testRun2(Assert $assert): Awaitable<void>
     {
         $token = 'foobarbazbiz';

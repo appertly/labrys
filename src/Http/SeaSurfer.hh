@@ -81,7 +81,8 @@ class SeaSurfer implements \Labrys\Route\Plugin
     {
         if ($this->methods->contains($request->getMethod())) {
             try {
-                $this->verify($request, $response);
+                $this->verifyOrigin($request);
+                $this->verifyToken($request);
             } catch (\OutOfBoundsException $e) {
                 $this->errorLogger->log($e);
                 $response->getBody()->write($e->getMessage());
@@ -98,7 +99,7 @@ class SeaSurfer implements \Labrys\Route\Plugin
     /**
      * Performs the verification.
      */
-    protected function verify(Request $request, Response $response): void
+    protected function verifyOrigin(Request $request): void
     {
         $source = strstr($request->getHeaderLine('Origin'), ' ', true) ?:
             $request->getHeaderLine('Referer');
@@ -115,6 +116,16 @@ class SeaSurfer implements \Labrys\Route\Plugin
         }
         if ($source && strcasecmp(parse_url($source, PHP_URL_HOST) ?? '', $hostname) !== 0) {
             throw new \UnexpectedValueException("CSRF: Unauthenticated session");
+        }
+    }
+
+    /**
+     * Performs the verification.
+     */
+    protected function verifyToken(Request $request): void
+    {
+        if ($request->getHeaderLine('X-Requested-With') == 'XMLHttpRequest') {
+            return;
         }
         $body = $request->getParsedBody();
         $token = $body instanceof KeyedContainer ? ($body[$this->field] ?? null) : null;
