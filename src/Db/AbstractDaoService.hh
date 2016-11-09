@@ -30,9 +30,12 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      * Creates a new AbstractDaoService.
      *
      * @param $gatekeeper - The security gatekeeper
+     * @param $readPermission - The ACL permission for read access
      */
-    public function __construct(protected \Labrys\Acl\Gatekeeper $gatekeeper)
-    {
+    public function __construct(
+        protected \Labrys\Acl\Gatekeeper $gatekeeper,
+        protected string $readPermission = 'read',
+    ) {
     }
 
     /**
@@ -83,7 +86,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
         $dao = $this->getDao();
         $entity = $dao->findById($id);
         if ($entity !== null) {
-            $this->gatekeeper->assert('read', $dao->getType(), $id);
+            $this->gatekeeper->assert($this->readPermission, $dao->getType(), $id);
         }
         return $entity;
     }
@@ -94,7 +97,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
      */
     public function get(mixed $id): Ta
     {
-        return $this->getAndAssert($id, 'read');
+        return $this->getAndAssert($id, $this->readPermission);
     }
 
     /**
@@ -105,7 +108,7 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
     {
         $dao = $this->getDao();
         $all = $dao->getAll($ids);
-        $this->gatekeeper->assertAll('read', $dao->getType(), $ids);
+        $this->gatekeeper->assertAll($this->readPermission, $dao->getType(), $ids);
         return $all;
     }
 
@@ -135,22 +138,5 @@ abstract class AbstractDaoService<Ta> implements EntityRepo<Ta>
         $entity = $dao->get($id);
         $this->gatekeeper->assert($verb, $dao->getType(), $id);
         return $entity;
-    }
-
-    /**
-     * Gets the record, but tests the 'write' permission
-     *
-     * @param $id - The entity id
-     * @return - The entity
-     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
-     * @throws \Caridea\Dao\Exception\Unretrievable If the document doesn't exist
-     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
-     * @throws \Caridea\Acl\Exception\Forbidden If the user has no access
-     * @deprecated 0.5.1:1.0.0 Use `getAndAssert($id, 'write')` instead
-     */
-    <<__Deprecated("Use getAndAssert(id, 'write') instead")>>
-    protected function getForUpdate(mixed $id): Ta
-    {
-        return $this->getAndAssert($id, 'write');
     }
 }
