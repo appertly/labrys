@@ -25,12 +25,12 @@
         "appertly/axe": "~0.1"
     },
     "require-dev": {
-        "hackpack/hackunit": "~0.6",
+        "hackpack/hackunit": "^1.0",
         "mockery/mockery": "^0.9",
         "hack-psr/psr7-http-message-hhi": "^0.2",
-        "libreworks/psr3-log-hhi": "~1.0.0",
-        "libreworks/ext-mongodb-hhi": "^1.1.0",
-        "mongodb/mongodb": "1.1.x-dev",
+        "libreworks/psr3-log-hhi": "^1.0.0",
+        "libreworks/ext-mongodb-hhi": "^1.2.0",
+        "mongodb/mongodb": "^1.1",
         "zendframework/zend-diactoros": "^1.0"
     },
     "suggest": {
