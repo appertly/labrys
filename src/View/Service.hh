@@ -221,6 +221,10 @@ class Service implements \Caridea\Container\ContainerAware
         $c = $this->container ?? new EmptyContainer();
         $blocks = new Vector($c->getByType(Block::class));
         $blocks = $blocks->filter((Block $b) ==> $region === $b->getRegion());
+        usort($blocks, function ($a, $b) {
+            /* HH_IGNORE_ERROR[1002]: Hack hates the spaceship operator */
+            return $a->getOrder() <=> $b->getOrder();
+        });
         return $blocks->toImmVector();
     }
 
