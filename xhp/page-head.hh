@@ -37,6 +37,7 @@ class :labrys:pagehead extends :x:element implements HasXHPHelpers
     protected function render(): XHPRoot
     {
         $blocks = <labrys:block-region />;
+        $blocks->setContext('region', 'head');
         foreach ($this->:service->getBlocks('head') as $block) {
             $blocks->appendChild(
                 <labrys:block block={$block} />

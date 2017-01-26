@@ -37,6 +37,7 @@ class :labrys:pagefoot extends :x:element implements HasXHPHelpers
     protected function render(): XHPRoot
     {
         $blocks = <labrys:block-region />;
+        $blocks->setContext('region', 'foot');
         foreach ($this->:service->getBlocks('foot') as $block) {
             $blocks->appendChild(
                 <labrys:block block={$block} />
