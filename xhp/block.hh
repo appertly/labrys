@@ -40,8 +40,13 @@ class :labrys:block extends :x:element implements HasXHPHelpers
         $block = $this->:block;
         $request = $this->getContext('request');
         $kid = await $block->compose($request instanceof Request ? $request : null);
-        return <div class={"block {$block->getRegion()}-block"}>
+        $out = <div class="block">
             {$kid}
         </div>;
+        $region = (string) $this->getContext('region');
+        if ($region) {
+            $out->addClass("$region-block");
+        }
+        return $out;
     }
 }
