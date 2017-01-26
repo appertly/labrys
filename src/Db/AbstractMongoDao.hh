@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * @copyright 2015-2016 Appertly
+ * @copyright 2015-2017 Appertly
  * @license   Apache-2.0
  */
 namespace Labrys\Db;
@@ -255,6 +255,34 @@ abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, 
     }
 
     /**
+     * Gets the read preference.
+     *
+     * If no read preference was specified at creation, this method returns the
+     * read preference as returned by the `Manager`.
+     *
+     * @return - The read preference, or `null`
+     * @since 0.7.2
+     */
+    public function getReadPreference(): ReadPreference
+    {
+        return $this->readPreference ?? $this->manager->getReadPreference();
+    }
+
+    /**
+     * Gets the write concern.
+     *
+     * If no write concern was specified at creation, this method returns the
+     * write concern as returned by the `Manager`.
+     *
+     * @return - The write concern
+     * @since 0.7.2
+     */
+    public function getWriteConcern(): WriteConcern
+    {
+        return $this->writeConcern ?? $this->manager->getWriteConcern();
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function isResolvable(string $ref): bool
@@ -440,6 +468,79 @@ abstract class AbstractMongoDao<T> extends MongoDbDao implements EntityRepo<T>, 
         });
         $this->postDelete($entity);
         return $wr;
+    }
+
+    /**
+     * Executes an aggregation command.
+     *
+     * @param $pipeline - The aggregation pipeline operations
+     * @param $options - Any aggregation options
+     * @see https://docs.mongodb.com/manual/reference/method/db.collection.aggregate/
+     * @since 0.7.2
+     */
+    protected function doAggregate(Traversable<\ConstMap<string,mixed>> $pipeline, \ConstMap<string,mixed> $options): \MongoDB\Driver\Cursor<mixed>
+    {
+        /* HH_IGNORE_ERROR[4101]: Cursor will return whatever the user specifies in the pipeline */
+        return $this->doExecute(function (Manager $m, string $c) use ($pipeline, $options) {
+            list($db, $coll) = explode('.', $c, 2);
+            $cmd = [
+                'aggregate' => $coll,
+                'pipeline' => $options->toArray(),
+            ];
+            foreach ($options as $k => $v) {
+                $cmd[$k] = $v;
+            }
+            $command = new \MongoDB\Driver\Command($cmd);
+            return $m->executeCommand($db, $command, $this->readPreference);
+        });
+    }
+
+    /**
+     * Executes a projection.
+     *
+     * @param $criteria - Field to value pairs
+     * @param $projections - Field name to projection value (either boolean or
+     *        projection operator)
+     * @param $pagination - Optional pagination parameters
+     * @param $totalCount - Return a `CursorSubset` that includes the total
+     *        number of records. This is only done if `$pagination` is not using
+     *        the defaults.
+     * @return - The projection cursor
+     * @throws \Caridea\Dao\Exception\Unreachable If the connection fails
+     * @throws \Caridea\Dao\Exception\Unretrievable If the result cannot be returned
+     * @throws \Caridea\Dao\Exception\Generic If any other database problem occurs
+     * @since 0.7.2
+     */
+    protected function doProjection(\ConstMap<string,mixed> $criteria, \ConstMap<string,mixed> $projections, ?\Caridea\Http\Pagination $pagination = null, ?bool $totalCount = false): \Iterator<mixed>
+    {
+        $total = null;
+        if ($totalCount === true && $pagination !== null && ($pagination->getMax() != PHP_INT_MAX || $pagination->getOffset() > 0)) {
+            $total = $this->countAll($criteria);
+        }
+        $results = $this->doExecute(function (Manager $m, string $c) use ($criteria, $projections, $pagination) {
+            $qo = [];
+            if ($pagination !== null) {
+                if ($pagination->getMax() != PHP_INT_MAX) {
+                    $qo['limit'] = $pagination->getMax();
+                }
+                $qo['skip'] = $pagination->getOffset();
+                $sorts = [];
+                foreach ($pagination->getOrder() as $k => $v) {
+                    $sorts[$k] = $v ? 1 : -1;
+                }
+                if (count($sorts) > 0) {
+                    $qo['sort'] = $sorts;
+                }
+            }
+            if (!$projections->isEmpty()) {
+                $qo['projection'] = $projections->toArray();
+            }
+            $q = new \MongoDB\Driver\Query($criteria->toArray(), $qo);
+            return $m->executeQuery($c, $q, $this->readPreference);
+        });
+        /* HH_IGNORE_ERROR[4101]: Cursor will return whatever the user specifies in the typeMap */
+        /* HH_IGNORE_ERROR[4029]: Also same thing here */
+        return $total === null ? $results : new CursorSubset($results, $total);
     }
 
     /**

@@ -25,20 +25,6 @@ namespace Labrys\View;
 interface Block
 {
     /**
-     * Gets the region in which this block should appear.
-     *
-     * @return - The region
-     */
-    public function getRegion(): string;
-
-    /**
-     * Gets the display order of this block in its region.
-     *
-     * @return - The display order
-     */
-    public function getOrder(): int;
-
-    /**
      * Compose the content.
      *
      * @param $request - The server request

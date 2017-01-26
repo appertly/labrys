@@ -35,6 +35,11 @@ class Service implements \Caridea\Container\ContainerAware
     private ?Page $page;
 
     /**
+     * The stored block layout
+     */
+    private ?BlockLayout $blocks;
+
+    /**
      * List of statuses
      */
     private static ImmVector<string> $statuses = ImmVector{'msg-warning', 'msg-info', 'msg-error'};
@@ -219,13 +224,38 @@ class Service implements \Caridea\Container\ContainerAware
     public function getBlocks(string $region): \ConstVector<Block>
     {
         $c = $this->container ?? new EmptyContainer();
-        $blocks = new Vector($c->getByType(Block::class));
-        $blocks = $blocks->filter((Block $b) ==> $region === $b->getRegion());
-        usort($blocks, function ($a, $b) {
-            /* HH_IGNORE_ERROR[1002]: Hack hates the spaceship operator */
-            return $a->getOrder() <=> $b->getOrder();
-        });
-        return $blocks->toImmVector();
+        $blocks = Vector{};
+        foreach ($this->getBlockLayout()->get($region) as $name) {
+            $blocks[] = $c->named($name, Block::class);
+        }
+        return $blocks;
+    }
+
+    protected function getBlockLayout(): BlockLayout
+    {
+        if ($this->blocks === null) {
+            $layout = new BlockLayout();
+            $c = $this->container ?? new EmptyContainer();
+            $layouts = new Vector($c->getByType(BlockLayout::class));
+            if ($layouts->isEmpty()) {
+                foreach ($c->getByType(Block::class) as $name => $block) {
+                    if (method_exists($block, 'getRegion')) {
+                        /* HH_IGNORE_ERROR[4053]: Tested above. */
+                        $region = $block->getRegion();
+                        $order = !method_exists($block, 'getOrder') ? 0 :
+                            /* HH_IGNORE_ERROR[4053]: Tested above. */
+                            (int) $block->getOrder();
+                        $layout->add($region, $order, $name);
+                    }
+                }
+            } else {
+                foreach ($layouts as $bl) {
+                    $layout->merge($bl);
+                }
+            }
+            $this->blocks = $layout;
+        }
+        return $this->blocks;
     }
 
     /**
